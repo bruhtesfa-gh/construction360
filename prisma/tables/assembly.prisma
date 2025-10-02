@@ -1,0 +1,258 @@
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model assembly_components {
+  component_id                                                               Int             @id @default(autoincrement())
+  builder_id                                                                 String          @db.Uuid
+  parent_assembly_id                                                         String          @db.Uuid
+  component_assembly_id                                                      String          @db.Uuid
+  qty                                                                        Decimal?        @db.Decimal(9, 4)
+  sort_order                                                                 Int?
+  use_parent_assembly_qty                                                    Boolean?        @default(false)
+  is_deleted                                                                 Boolean?        @default(false)
+  created_date                                                               DateTime?       @default(now()) @db.Timestamp(6)
+  modified_date                                                              DateTime?       @default(now()) @db.Timestamp(6)
+  builders                                                                   builders        @relation(fields: [builder_id], references: [builder_id], onDelete: Cascade, onUpdate: NoAction)
+  assembly_master_assembly_components_component_assembly_idToassembly_master assembly_master @relation("assembly_components_component_assembly_idToassembly_master", fields: [component_assembly_id], references: [assembly_id], onDelete: Cascade, onUpdate: NoAction)
+  assembly_master_assembly_components_parent_assembly_idToassembly_master    assembly_master @relation("assembly_components_parent_assembly_idToassembly_master", fields: [parent_assembly_id], references: [assembly_id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@unique([parent_assembly_id, component_assembly_id])
+  @@index([builder_id], map: "idx_assembly_components_builder_id")
+  @@index([component_assembly_id], map: "idx_assembly_components_component_assembly_id")
+  @@index([parent_assembly_id], map: "idx_assembly_components_parent_assembly_id")
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model assembly_intersect_assemblies {
+  intersect_assembly_id  Int                    @id @default(autoincrement())
+  builder_id             String                 @db.Uuid
+  intersect_id           Int
+  assembly_id            String                 @db.Uuid
+  created_date           DateTime?              @default(now()) @db.Timestamp(6)
+  modified_date          DateTime?              @default(now()) @db.Timestamp(6)
+  assembly_master        assembly_master        @relation(fields: [assembly_id], references: [assembly_id], onDelete: Cascade, onUpdate: NoAction)
+  builders               builders               @relation(fields: [builder_id], references: [builder_id], onDelete: Cascade, onUpdate: NoAction)
+  assembly_intersections assembly_intersections @relation(fields: [intersect_id], references: [intersect_id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@unique([intersect_id, assembly_id])
+  @@index([assembly_id], map: "idx_assembly_intersect_assemblies_assembly_id")
+  @@index([builder_id], map: "idx_assembly_intersect_assemblies_builder_id")
+  @@index([intersect_id], map: "idx_assembly_intersect_assemblies_intersect_id")
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model assembly_intersect_items {
+  item_id                Int                    @id @default(autoincrement())
+  builder_id             String                 @db.Uuid
+  intersect_id           Int
+  assembly_id            String                 @db.Uuid
+  po_index               String                 @db.VarChar(40)
+  takeoff_qty            Decimal                @db.Decimal(14, 4)
+  takeoff_uom            String?                @db.VarChar(20)
+  conversion_factor      Decimal?               @db.Decimal(9, 4)
+  order_qty              Decimal?               @db.Decimal(14, 4)
+  order_uom              String?                @db.VarChar(20)
+  notes                  String?                @db.VarChar(2000)
+  estimating_db_item_id  String                 @db.Uuid
+  created_date           DateTime?              @default(now()) @db.Timestamp(6)
+  modified_date          DateTime?              @default(now()) @db.Timestamp(6)
+  assembly_master        assembly_master        @relation(fields: [assembly_id], references: [assembly_id], onDelete: Cascade, onUpdate: NoAction)
+  builders               builders               @relation(fields: [builder_id], references: [builder_id], onDelete: Cascade, onUpdate: NoAction)
+  estimating_db_items    estimating_db_items    @relation(fields: [estimating_db_item_id], references: [estimating_db_item_id], onDelete: Cascade, onUpdate: NoAction)
+  assembly_intersections assembly_intersections @relation(fields: [intersect_id], references: [intersect_id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@unique([intersect_id, assembly_id, estimating_db_item_id, po_index, takeoff_qty], map: "idx_assembly_intersect_items_unique")
+  @@index([assembly_id], map: "idx_assembly_intersect_items_assembly_id")
+  @@index([builder_id], map: "idx_assembly_intersect_items_builder_id")
+  @@index([estimating_db_item_id], map: "idx_assembly_intersect_items_estimating_db_item_id")
+  @@index([intersect_id], map: "idx_assembly_intersect_items_intersect_id")
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model assembly_intersections {
+  intersect_id                  Int                             @id @default(autoincrement())
+  builder_id                    String                          @db.Uuid
+  region_id                     String                          @db.Uuid
+  description                   String                          @db.VarChar(200)
+  created_date                  DateTime?                       @default(now()) @db.Timestamp(6)
+  modified_date                 DateTime?                       @default(now()) @db.Timestamp(6)
+  assembly_intersect_assemblies assembly_intersect_assemblies[]
+  assembly_intersect_items      assembly_intersect_items[]
+  builders                      builders                        @relation(fields: [builder_id], references: [builder_id], onDelete: Cascade, onUpdate: NoAction)
+  regions                       regions                         @relation(fields: [region_id], references: [region_id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@unique([region_id, description])
+  @@index([builder_id], map: "idx_assembly_intersections_builder_id")
+  @@index([region_id], map: "idx_assembly_intersections_region_id")
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model assembly_items {
+  assembly_item_id      String       @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  builder_id            String       @db.Uuid
+  assembly_id           String       @db.Uuid
+  sequence_no           Int?         @default(1)
+  estimating_db_item_id String?      @db.Uuid
+  child_item_id         String?      @db.Uuid
+  sub_child_item_id     String?      @db.Uuid
+  required_qty          Decimal?     @default(0) @db.Decimal(19, 4)
+  waste_percent         Decimal?     @default(0) @db.Decimal(19, 4)
+  community_id          String?      @db.Uuid
+  notes                 String?
+  is_active             Boolean?     @default(true)
+  created_by            String?      @db.Uuid
+  created_date          DateTime?    @default(now()) @db.Timestamp(6)
+  modified_by           String?      @db.Uuid
+  modified_date         DateTime?    @default(now()) @db.Timestamp(6)
+  builders              builders     @relation(fields: [builder_id], references: [builder_id], onDelete: Cascade, onUpdate: NoAction)
+  communities           communities? @relation(fields: [community_id], references: [community_id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@index([assembly_id], map: "idx_assembly_items_assembly_id")
+  @@index([builder_id], map: "idx_assembly_items_builder_id")
+  @@index([community_id], map: "idx_assembly_items_community_id")
+  @@index([estimating_db_item_id], map: "idx_assembly_items_estimating_db_item_id")
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model assembly_master {
+  assembly_id                                                                    String                          @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  builder_id                                                                     String                          @db.Uuid
+  region_id                                                                      String                          @db.Uuid
+  assembly_code                                                                  String                          @db.VarChar(100)
+  description                                                                    String?                         @db.VarChar(100)
+  assembly_type                                                                  String?                         @db.VarChar(50)
+  unit_of_measure                                                                String?                         @db.VarChar(50)
+  total_cost                                                                     Decimal?                        @default(0) @db.Decimal(19, 4)
+  total_qty                                                                      Decimal?                        @default(0) @db.Decimal(19, 4)
+  version_number                                                                 Int?                            @default(1)
+  is_current_version                                                             Boolean?                        @default(true)
+  community_id                                                                   String?                         @db.Uuid
+  attribute_list_room_id                                                         String?                         @db.Uuid
+  attribute_list_category_id                                                     String?                         @db.Uuid
+  attribute_list_sub_category_id                                                 String?                         @db.Uuid
+  attribute_list_sub_category2_id                                                String?                         @db.Uuid
+  attribute_list_series_id                                                       String?                         @db.Uuid
+  attribute_list_brand_id                                                        String?                         @db.Uuid
+  attribute_list_manufacturer_id                                                 String?                         @db.Uuid
+  attribute_list_color_id                                                        String?                         @db.Uuid
+  attribute_list_style_id                                                        String?                         @db.Uuid
+  attribute_list_finish_id                                                       String?                         @db.Uuid
+  attribute_list_material_id                                                     String?                         @db.Uuid
+  attribute_list_room_size_id                                                    String?                         @db.Uuid
+  attribute_list_size_id                                                         String?                         @db.Uuid
+  attribute_list_location_id                                                     String?                         @db.Uuid
+  notes                                                                          String?
+  is_active                                                                      Boolean?                        @default(true)
+  created_by                                                                     String?                         @db.Uuid
+  created_date                                                                   DateTime?                       @default(now()) @db.Timestamp(6)
+  modified_by                                                                    String?                         @db.Uuid
+  modified_date                                                                  DateTime?                       @default(now()) @db.Timestamp(6)
+  assembly_components_assembly_components_component_assembly_idToassembly_master assembly_components[]           @relation("assembly_components_component_assembly_idToassembly_master")
+  assembly_components_assembly_components_parent_assembly_idToassembly_master    assembly_components[]           @relation("assembly_components_parent_assembly_idToassembly_master")
+  assembly_intersect_assemblies                                                  assembly_intersect_assemblies[]
+  assembly_intersect_items                                                       assembly_intersect_items[]
+  builders                                                                       builders                        @relation(fields: [builder_id], references: [builder_id], onDelete: Cascade, onUpdate: NoAction)
+  communities                                                                    communities?                    @relation(fields: [community_id], references: [community_id], onDelete: NoAction, onUpdate: NoAction)
+  regions                                                                        regions                         @relation(fields: [region_id], references: [region_id], onDelete: NoAction, onUpdate: NoAction)
+  assembly_sales_pricing                                                         assembly_sales_pricing[]
+
+  @@unique([builder_id, region_id, assembly_code, version_number], map: "uk_assembly_master")
+  @@index([assembly_code], map: "idx_assembly_master_assembly_code")
+  @@index([builder_id], map: "idx_assembly_master_builder_id")
+  @@index([community_id], map: "idx_assembly_master_community_id")
+  @@index([is_current_version], map: "idx_assembly_master_is_current_version")
+  @@index([region_id], map: "idx_assembly_master_region_id")
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model assembly_sales_pricing {
+  pricing_id                                       Int              @id @default(autoincrement())
+  builder_id                                       String           @db.Uuid
+  assembly_id                                      String           @db.Uuid
+  community_id                                     String           @db.Uuid
+  community_phase_id                               String           @db.Uuid
+  assembly_type_id                                 Int
+  floor_plan_code                                  String           @db.VarChar(50)
+  elevation_code                                   String           @db.VarChar(50)
+  option_code                                      String           @db.VarChar(50)
+  series                                           String?          @db.VarChar(50)
+  category_code                                    String?          @db.VarChar(50)
+  sub_category_code                                String?          @db.VarChar(50)
+  unit_of_measure                                  String?          @db.VarChar(50)
+  description                                      String           @db.VarChar(500)
+  comments                                         String?
+  cost_basis_type                                  Int?
+  price                                            Decimal?         @db.Decimal(12, 2)
+  construction_cost                                Decimal?         @db.Decimal(12, 2)
+  land_cost                                        Decimal?         @db.Decimal(12, 2)
+  commission_cost                                  Decimal?         @db.Decimal(12, 2)
+  last_price_change                                DateTime?        @db.Timestamp(6)
+  sales_price_sheet                                Int?
+  inactive                                         Boolean?         @default(false)
+  inactive_date                                    DateTime?        @db.Timestamp(6)
+  color_attribute_list_id                          String?          @db.Uuid
+  style_attribute_list_id                          String?          @db.Uuid
+  finish_attribute_list_id                         String?          @db.Uuid
+  other_attribute_list_id                          String?          @db.Uuid
+  included_at_no_charge                            Boolean?         @default(false)
+  select_by_room                                   Boolean?         @default(false)
+  display_total_only                               Boolean?         @default(false)
+  location                                         String?          @db.VarChar(200)
+  main_floor_size                                  Decimal?         @db.Decimal(9, 2)
+  lower_level_size                                 Decimal?         @db.Decimal(9, 2)
+  second_level_size                                Decimal?         @db.Decimal(9, 2)
+  third_level_size                                 Decimal?         @db.Decimal(9, 2)
+  garage_size                                      Decimal?         @db.Decimal(9, 2)
+  room_size_adjustment                             Boolean?         @default(false)
+  construction_stage_cutoff                        Int?
+  warranty_info                                    String?
+  created_date                                     DateTime?        @default(now()) @db.Timestamp(6)
+  created_by                                       String           @db.Uuid
+  modified_date                                    DateTime?        @default(now()) @db.Timestamp(6)
+  modified_by                                      String           @db.Uuid
+  total_size                                       Decimal?         @db.Decimal(9, 2)
+  num_of_beds                                      Decimal?         @db.Decimal(9, 2)
+  num_of_baths                                     Decimal?         @db.Decimal(9, 2)
+  num_of_garages                                   Decimal?         @db.Decimal(6, 2)
+  restriction_warning                              Boolean?         @default(false)
+  restriction_message                              String?
+  option_package_id                                String?          @db.Uuid
+  no_commission_paid                               Boolean?         @default(false)
+  margin_percentage                                Decimal?         @db.Decimal(6, 2)
+  round_to                                         Decimal?         @db.Decimal(6, 2)
+  warranty_details                                 String?
+  warranty_period_in_months                        Int?
+  is_deleted                                       Boolean?         @default(false)
+  deleted_date                                     DateTime?        @db.Timestamp(6)
+  deleted_by                                       String?          @db.Uuid
+  is_published                                     Boolean?         @default(false)
+  published_date                                   DateTime?        @db.Timestamp(6)
+  published_by                                     String?          @db.Uuid
+  assembly_master                                  assembly_master  @relation(fields: [assembly_id], references: [assembly_id], onDelete: Cascade, onUpdate: NoAction)
+  assembly_types                                   assembly_types   @relation(fields: [assembly_type_id], references: [assembly_type_id], onDelete: NoAction, onUpdate: NoAction)
+  builders                                         builders         @relation(fields: [builder_id], references: [builder_id], onDelete: Cascade, onUpdate: NoAction)
+  communities                                      communities      @relation(fields: [community_id], references: [community_id], onDelete: Cascade, onUpdate: NoAction)
+  community_phase                                  community_phase  @relation(fields: [community_phase_id], references: [community_phase_id], onDelete: Cascade, onUpdate: NoAction)
+  users_assembly_sales_pricing_created_byTousers   users            @relation("assembly_sales_pricing_created_byTousers", fields: [created_by], references: [user_id], onDelete: NoAction, onUpdate: NoAction)
+  users_assembly_sales_pricing_deleted_byTousers   users?           @relation("assembly_sales_pricing_deleted_byTousers", fields: [deleted_by], references: [user_id], onUpdate: NoAction)
+  users_assembly_sales_pricing_modified_byTousers  users            @relation("assembly_sales_pricing_modified_byTousers", fields: [modified_by], references: [user_id], onDelete: NoAction, onUpdate: NoAction)
+  option_packages                                  option_packages? @relation(fields: [option_package_id], references: [option_package_id], onUpdate: NoAction)
+  users_assembly_sales_pricing_published_byTousers users?           @relation("assembly_sales_pricing_published_byTousers", fields: [published_by], references: [user_id], onUpdate: NoAction)
+
+  @@unique([assembly_id, community_id, community_phase_id, floor_plan_code, elevation_code, option_code])
+  @@index([assembly_id], map: "idx_assembly_sales_pricing_assembly_id")
+  @@index([assembly_type_id], map: "idx_assembly_sales_pricing_assembly_type_id")
+  @@index([builder_id], map: "idx_assembly_sales_pricing_builder_id")
+  @@index([community_id], map: "idx_assembly_sales_pricing_community_id")
+  @@index([community_phase_id], map: "idx_assembly_sales_pricing_community_phase_id")
+  @@index([elevation_code], map: "idx_assembly_sales_pricing_elevation_code")
+  @@index([floor_plan_code], map: "idx_assembly_sales_pricing_floor_plan_code")
+  @@index([option_code], map: "idx_assembly_sales_pricing_option_code")
+  @@index([option_package_id], map: "idx_assembly_sales_pricing_option_package_id")
+}
+
+model assembly_types {
+  assembly_type_id       Int                      @id
+  description            String?                  @db.VarChar(20)
+  created_date           DateTime?                @default(now()) @db.Timestamp(6)
+  modified_date          DateTime?                @default(now()) @db.Timestamp(6)
+  assembly_sales_pricing assembly_sales_pricing[]
+}

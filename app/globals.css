@@ -1,0 +1,269 @@
+@import "tailwindcss";
+
+:root {
+  --background: 0 0% 100%;
+  --foreground: 222.2 84% 4.9%;
+  --card: 0 0% 100%;
+  --card-foreground: 222.2 84% 4.9%;
+  --popover: 0 0% 100%;
+  --popover-foreground: 222.2 84% 4.9%;
+  --primary: 221.2 83.2% 53.3%;
+  --primary-foreground: 210 40% 98%;
+  --secondary: 210 40% 96%;
+  --secondary-foreground: 222.2 84% 4.9%;
+  --muted: 210 40% 96%;
+  --muted-foreground: 215.4 16.3% 46.9%;
+  --accent: 210 40% 96%;
+  --accent-foreground: 222.2 84% 4.9%;
+  --destructive: 0 84.2% 60.2%;
+  --destructive-foreground: 210 40% 98%;
+  --border: 214.3 31.8% 91.4%;
+  --input: 214.3 31.8% 91.4%;
+  --ring: 221.2 83.2% 53.3%;
+  --radius: 0.5rem;
+  --success: 158 64% 52%;
+  --success-foreground: 0 0% 100%;
+  --info: 189 94% 43%;
+  --info-foreground: 0 0% 100%;
+  --warning: 32 95% 50%;
+  --warning-foreground: 0 0% 100%;
+  --radius-button: 0.75rem;
+  --radius-card: 1.25rem;
+}
+
+.dark {
+  --background: 222.2 84% 4.9%;
+  --foreground: 210 40% 98%;
+  --card: 222.2 84% 4.9%;
+  --card-foreground: 210 40% 98%;
+  --popover: 222.2 84% 4.9%;
+  --popover-foreground: 210 40% 98%;
+  --primary: 217.2 91.2% 59.8%;
+  --primary-foreground: 222.2 84% 4.9%;
+  --secondary: 217.2 32.6% 17.5%;
+  --secondary-foreground: 210 40% 98%;
+  --muted: 217.2 32.6% 17.5%;
+  --muted-foreground: 215 20.2% 65.1%;
+  --accent: 217.2 32.6% 17.5%;
+  --accent-foreground: 210 40% 98%;
+  --destructive: 0 62.8% 30.6%;
+  --destructive-foreground: 210 40% 98%;
+  --border: 217.2 32.6% 17.5%;
+  --input: 217.2 32.6% 17.5%;
+  --ring: 224.3 76.3% 94.1%;
+  --success: 158 64% 52%;
+  --success-foreground: 0 0% 100%;
+  --info: 189 94% 43%;
+  --info-foreground: 0 0% 100%;
+  --warning: 32 95% 50%;
+  --warning-foreground: 0 0% 100%;
+}
+
+@theme inline {
+  --color-background: hsl(var(--background));
+  --color-foreground: hsl(var(--foreground));
+  --color-card: hsl(var(--card));
+  --color-card-foreground: hsl(var(--card-foreground));
+  --color-popover: hsl(var(--popover));
+  --color-popover-foreground: hsl(var(--popover-foreground));
+  --color-primary: hsl(var(--primary));
+  --color-primary-foreground: hsl(var(--primary-foreground));
+  --color-secondary: hsl(var(--secondary));
+  --color-secondary-foreground: hsl(var(--secondary-foreground));
+  --color-muted: hsl(var(--muted));
+  --color-muted-foreground: hsl(var(--muted-foreground));
+  --color-accent: hsl(var(--accent));
+  --color-accent-foreground: hsl(var(--accent-foreground));
+  --color-destructive: hsl(var(--destructive));
+  --color-destructive-foreground: hsl(var(--destructive-foreground));
+  --color-border: hsl(var(--border));
+  --color-input: hsl(var(--input));
+  --color-ring: hsl(var(--ring));
+  --color-success: hsl(var(--success));
+  --color-success-foreground: hsl(var(--success-foreground));
+  --color-info: hsl(var(--info));
+  --color-info-foreground: hsl(var(--info-foreground));
+  --color-warning: hsl(var(--warning));
+  --color-warning-foreground: hsl(var(--warning-foreground));
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+  --radius-button: var(--radius-button, 0.75rem);
+  --radius-card: var(--radius-card, 1.25rem);
+}
+
+* {
+  border-color: hsl(var(--border));
+}
+
+body {
+  background-color: hsl(var(--background));
+  color: hsl(var(--foreground));
+}
+
+/* AG Grid Dark Mode Styles */
+.dark .ag-theme-alpine {
+  --ag-background-color: hsl(var(--card));
+  --ag-foreground-color: hsl(var(--card-foreground));
+  --ag-header-background-color: hsl(var(--muted));
+  --ag-header-foreground-color: hsl(var(--foreground));
+  --ag-odd-row-background-color: hsl(var(--card));
+  --ag-row-hover-color: hsl(var(--accent));
+  --ag-border-color: hsl(var(--border));
+  --ag-header-cell-hover-background-color: hsl(var(--accent));
+  --ag-header-cell-moving-background-color: hsl(var(--accent));
+  --ag-range-selection-border-color: hsl(var(--primary));
+  --ag-range-selection-background-color: hsla(var(--primary) / 0.2);
+  --ag-selected-row-background-color: hsla(var(--primary) / 0.1);
+}
+
+/* Force dark backgrounds on AG Grid elements */
+.dark .ag-theme-alpine .ag-root-wrapper,
+.dark .ag-theme-alpine .ag-root,
+.dark .ag-theme-alpine .ag-body-viewport,
+.dark .ag-theme-alpine .ag-center-cols-container,
+.dark .ag-theme-alpine .ag-center-cols-viewport,
+.dark .ag-theme-alpine .ag-center-cols-clipper {
+  background-color: hsl(var(--card)) !important;
+}
+
+/* Ensure rows have proper background */
+.dark .ag-theme-alpine .ag-row {
+  background-color: hsl(var(--card)) !important;
+}
+
+/* Alternate row styling */
+.dark .ag-theme-alpine .ag-row-odd {
+  background-color: hsl(var(--muted)) !important;
+}
+
+/* Cell text color */
+.dark .ag-theme-alpine .ag-cell {
+  color: hsl(var(--card-foreground)) !important;
+}
+
+/* Header text color - ensure it's readable */
+.dark .ag-theme-alpine .ag-header-cell-text,
+.dark .ag-theme-alpine .ag-header-cell-label,
+.dark .ag-theme-alpine .ag-header-group-cell-label {
+  color: hsl(var(--foreground)) !important;
+  font-weight: 600;
+}
+
+/* Header background for better contrast */
+.dark .ag-theme-alpine .ag-header,
+.dark .ag-theme-alpine .ag-header-row,
+.dark .ag-theme-alpine .ag-header-cell {
+  background-color: hsl(var(--muted)) !important;
+  border-color: hsl(var(--border)) !important;
+}
+
+/* Ensure filter icons are visible */
+.dark .ag-theme-alpine .ag-icon {
+  color: hsl(var(--foreground)) !important;
+  opacity: 0.8;
+}
+
+/* Hover states for headers */
+.dark .ag-theme-alpine .ag-header-cell:hover {
+  background-color: hsl(var(--accent)) !important;
+}
+
+/* Sort indicator visibility */
+.dark .ag-theme-alpine .ag-header-cell-sorted-asc,
+.dark .ag-theme-alpine .ag-header-cell-sorted-desc {
+  color: hsl(var(--primary)) !important;
+}
+
+/* Link styles in cells */
+.dark .ag-theme-alpine .ag-cell a {
+  color: rgb(250 204 21) !important; /* yellow-400 */
+}
+
+.dark .ag-theme-alpine .ag-cell a:hover {
+  color: rgb(253 224 71) !important; /* yellow-300 */
+  text-decoration: underline;
+}
+
+/* AG Grid Quartz Theme Dark Mode Styles */
+.dark .ag-theme-quartz {
+  --ag-background-color: hsl(var(--card));
+  --ag-foreground-color: hsl(var(--card-foreground));
+  --ag-header-background-color: hsl(var(--muted));
+  --ag-header-foreground-color: hsl(var(--foreground));
+  --ag-odd-row-background-color: hsl(var(--card));
+  --ag-row-hover-color: hsl(var(--accent));
+  --ag-border-color: hsl(var(--border));
+  --ag-header-cell-hover-background-color: hsl(var(--accent));
+  --ag-header-cell-moving-background-color: hsl(var(--accent));
+  --ag-range-selection-border-color: hsl(var(--primary));
+  --ag-range-selection-background-color: hsla(var(--primary) / 0.2);
+  --ag-selected-row-background-color: hsla(var(--primary) / 0.1);
+}
+
+/* Force dark backgrounds on AG Grid Quartz elements */
+.dark .ag-theme-quartz .ag-root-wrapper,
+.dark .ag-theme-quartz .ag-root,
+.dark .ag-theme-quartz .ag-body-viewport,
+.dark .ag-theme-quartz .ag-center-cols-container,
+.dark .ag-theme-quartz .ag-center-cols-viewport,
+.dark .ag-theme-quartz .ag-center-cols-clipper {
+  background-color: hsl(var(--card)) !important;
+}
+
+/* Ensure rows have proper background */
+.dark .ag-theme-quartz .ag-row {
+  background-color: hsl(var(--card)) !important;
+}
+
+/* Alternate row styling */
+.dark .ag-theme-quartz .ag-row-odd {
+  background-color: hsl(var(--muted)) !important;
+}
+
+/* Cell text color */
+.dark .ag-theme-quartz .ag-cell {
+  color: hsl(var(--card-foreground)) !important;
+}
+
+/* Header text color - ensure it's readable */
+.dark .ag-theme-quartz .ag-header-cell-text,
+.dark .ag-theme-quartz .ag-header-cell-label,
+.dark .ag-theme-quartz .ag-header-group-cell-label {
+  color: hsl(var(--foreground)) !important;
+  font-weight: 600;
+}
+
+/* Header background for better contrast */
+.dark .ag-theme-quartz .ag-header,
+.dark .ag-theme-quartz .ag-header-row,
+.dark .ag-theme-quartz .ag-header-cell {
+  background-color: hsl(var(--muted)) !important;
+  border-color: hsl(var(--border)) !important;
+}
+
+/* Ensure filter icons are visible */
+.dark .ag-theme-quartz .ag-icon {
+  color: hsl(var(--foreground)) !important;
+  opacity: 0.8;
+}
+
+/* Hover states for headers */
+.dark .ag-theme-quartz .ag-header-cell:hover {
+  background-color: hsl(var(--accent)) !important;
+}
+
+/* Sort indicator visibility */
+.dark .ag-theme-quartz .ag-header-cell-sorted-asc,
+.dark .ag-theme-quartz .ag-header-cell-sorted-desc {
+  color: hsl(var(--primary)) !important;
+}
+
+/* Link styles in cells */
+.dark .ag-theme-quartz .ag-cell a {
+  color: rgb(250 204 21) !important; /* yellow-400 */
+}
+
+.dark .ag-theme-quartz .ag-cell a:hover {
+  color: rgb(253 224 71) !important; /* yellow-300 */
+  text-decoration: underline;
+}

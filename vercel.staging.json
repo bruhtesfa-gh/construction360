@@ -1,0 +1,17 @@
+{
+  "framework": "nextjs",
+  "regions": ["iad1"],
+  "git": {
+    "deploymentEnabled": true
+  },
+  "env": {
+    "NODE_ENV": "staging"
+  },
+  "buildCommand": "npm run build:staging",
+  "installCommand": "npm install",
+  "functions": {
+    "web/src/pages/api/**/*.ts": {
+      "maxDuration": 30
+    }
+  }
+}

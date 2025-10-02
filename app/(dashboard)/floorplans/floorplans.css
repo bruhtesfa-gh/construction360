@@ -1,0 +1,26 @@
+/* Editable cell styling for AG-Grid */
+.ag-theme-quartz .editable-cell {
+  background-color: rgba(59, 130, 246, 0.05);
+  border-left: 2px solid transparent;
+  transition: all 0.2s ease;
+}
+
+.ag-theme-quartz .editable-cell:hover {
+  background-color: rgba(59, 130, 246, 0.1);
+  border-left-color: rgb(59, 130, 246);
+  cursor: text;
+}
+
+.ag-theme-quartz .editable-cell.ag-cell-focus {
+  border-color: rgb(59, 130, 246) !important;
+  background-color: rgba(59, 130, 246, 0.1);
+}
+
+/* Add a subtle dashed border to indicate editability */
+.ag-theme-quartz .editable-cell::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border: 1px dashed rgba(59, 130, 246, 0.3);
+  pointer-events: none;
+}
