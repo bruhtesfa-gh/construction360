@@ -1,0 +1,137 @@
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model warranty_problem_po_indexes {
+  warranty_problem_po_index_id                         String            @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  builder_id                                           String            @db.Uuid
+  warranty_problem_id                                  String            @db.Uuid
+  po_master_id                                         String?           @db.Uuid
+  po_number                                            String?           @db.VarChar(50)
+  po_line_number                                       Int?
+  item_description                                     String?           @db.VarChar(500)
+  quantity                                             Decimal?          @db.Decimal(10, 4)
+  unit_cost                                            Decimal?          @db.Decimal(10, 4)
+  total_cost                                           Decimal?          @db.Decimal(12, 2)
+  created_by                                           String?           @db.Uuid
+  modified_by                                          String?           @db.Uuid
+  created_at                                           DateTime?         @default(now()) @db.Timestamptz(6)
+  updated_at                                           DateTime?         @default(now()) @db.Timestamptz(6)
+  builders                                             builders          @relation(fields: [builder_id], references: [builder_id], onDelete: Cascade, onUpdate: NoAction)
+  users_warranty_problem_po_indexes_created_byTousers  users?            @relation("warranty_problem_po_indexes_created_byTousers", fields: [created_by], references: [user_id], onDelete: NoAction, onUpdate: NoAction)
+  users_warranty_problem_po_indexes_modified_byTousers users?            @relation("warranty_problem_po_indexes_modified_byTousers", fields: [modified_by], references: [user_id], onDelete: NoAction, onUpdate: NoAction)
+  po_master                                            po_master?        @relation(fields: [po_master_id], references: [po_master_id], onDelete: NoAction, onUpdate: NoAction)
+  warranty_problems                                    warranty_problems @relation(fields: [warranty_problem_id], references: [warranty_problem_id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@index([builder_id], map: "idx_warranty_problem_po_indexes_builder_id")
+  @@index([po_master_id], map: "idx_warranty_problem_po_indexes_po_master_id")
+  @@index([warranty_problem_id], map: "idx_warranty_problem_po_indexes_problem_id")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model warranty_problems {
+  warranty_problem_id                        String                        @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  builder_id                                 String                        @db.Uuid
+  region_id                                  String                        @db.Uuid
+  community_id                               String?                       @db.Uuid
+  job_id                                     String?                       @db.Uuid
+  home_id                                    String?                       @db.Uuid
+  customer_id                                String?                       @db.Uuid
+  problem_number                             String                        @db.VarChar(50)
+  problem_title                              String                        @db.VarChar(200)
+  problem_description                        String
+  problem_category                           String?                       @db.VarChar(100)
+  problem_type                               String?                       @db.VarChar(100)
+  severity                                   String?                       @default("medium") @db.VarChar(20)
+  priority                                   String?                       @default("medium") @db.VarChar(20)
+  status                                     String                        @default("open") @db.VarChar(50)
+  reported_date                              DateTime                      @db.Timestamptz(6)
+  reported_by                                String?                       @db.VarChar(200)
+  assigned_to                                String?                       @db.Uuid
+  target_completion_date                     DateTime?                     @db.Timestamptz(6)
+  actual_completion_date                     DateTime?                     @db.Timestamptz(6)
+  location_description                       String?                       @db.VarChar(200)
+  room_location                              String?                       @db.VarChar(100)
+  trade                                      String?                       @db.VarChar(100)
+  supplier_id                                String?                       @db.Uuid
+  estimated_cost                             Decimal?                      @db.Decimal(10, 2)
+  actual_cost                                Decimal?                      @db.Decimal(10, 2)
+  warranty_period_months                     Int?
+  warranty_start_date                        DateTime?                     @db.Timestamptz(6)
+  warranty_end_date                          DateTime?                     @db.Timestamptz(6)
+  is_covered_under_warranty                  Boolean?                      @default(true)
+  resolution_notes                           String?
+  customer_satisfaction_rating               Int?
+  created_by                                 String?                       @db.Uuid
+  modified_by                                String?                       @db.Uuid
+  created_at                                 DateTime?                     @default(now()) @db.Timestamptz(6)
+  updated_at                                 DateTime?                     @default(now()) @db.Timestamptz(6)
+  warranty_problem_po_indexes                warranty_problem_po_indexes[]
+  users_warranty_problems_assigned_toTousers users?                        @relation("warranty_problems_assigned_toTousers", fields: [assigned_to], references: [user_id], onDelete: NoAction, onUpdate: NoAction)
+  builders                                   builders                      @relation(fields: [builder_id], references: [builder_id], onDelete: Cascade, onUpdate: NoAction)
+  communities                                communities?                  @relation(fields: [community_id], references: [community_id], onDelete: NoAction, onUpdate: NoAction)
+  users_warranty_problems_created_byTousers  users?                        @relation("warranty_problems_created_byTousers", fields: [created_by], references: [user_id], onDelete: NoAction, onUpdate: NoAction)
+  customers                                  customers?                    @relation(fields: [customer_id], references: [customer_id], onDelete: NoAction, onUpdate: NoAction)
+  homes                                      homes?                        @relation(fields: [home_id], references: [home_id], onDelete: NoAction, onUpdate: NoAction)
+  jobs                                       jobs?                         @relation(fields: [job_id], references: [job_id], onDelete: NoAction, onUpdate: NoAction)
+  users_warranty_problems_modified_byTousers users?                        @relation("warranty_problems_modified_byTousers", fields: [modified_by], references: [user_id], onDelete: NoAction, onUpdate: NoAction)
+  regions                                    regions                       @relation(fields: [region_id], references: [region_id], onDelete: NoAction, onUpdate: NoAction)
+  suppliers                                  suppliers?                    @relation(fields: [supplier_id], references: [supplier_id], onDelete: NoAction, onUpdate: NoAction)
+  warranty_work_orders                       warranty_work_orders[]
+
+  @@unique([builder_id, problem_number])
+  @@index([assigned_to], map: "idx_warranty_problems_assigned_to")
+  @@index([builder_id], map: "idx_warranty_problems_builder_id")
+  @@index([community_id], map: "idx_warranty_problems_community_id")
+  @@index([customer_id], map: "idx_warranty_problems_customer_id")
+  @@index([home_id], map: "idx_warranty_problems_home_id")
+  @@index([job_id], map: "idx_warranty_problems_job_id")
+  @@index([region_id], map: "idx_warranty_problems_region_id")
+  @@index([status], map: "idx_warranty_problems_status")
+  @@index([supplier_id], map: "idx_warranty_problems_supplier_id")
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model warranty_work_orders {
+  warranty_work_order_id                        String            @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  builder_id                                    String            @db.Uuid
+  warranty_problem_id                           String            @db.Uuid
+  work_order_number                             String            @db.VarChar(50)
+  work_order_title                              String            @db.VarChar(200)
+  work_order_description                        String?
+  work_order_type                               String?           @db.VarChar(100)
+  status                                        String            @default("pending") @db.VarChar(50)
+  priority                                      String?           @default("medium") @db.VarChar(20)
+  scheduled_start_date                          DateTime?         @db.Timestamptz(6)
+  scheduled_end_date                            DateTime?         @db.Timestamptz(6)
+  actual_start_date                             DateTime?         @db.Timestamptz(6)
+  actual_end_date                               DateTime?         @db.Timestamptz(6)
+  assigned_supplier_id                          String?           @db.Uuid
+  assigned_contact_id                           String?           @db.Uuid
+  estimated_hours                               Decimal?          @db.Decimal(6, 2)
+  actual_hours                                  Decimal?          @db.Decimal(6, 2)
+  estimated_cost                                Decimal?          @db.Decimal(10, 2)
+  actual_cost                                   Decimal?          @db.Decimal(10, 2)
+  materials_cost                                Decimal?          @db.Decimal(10, 2)
+  labor_cost                                    Decimal?          @db.Decimal(10, 2)
+  work_instructions                             String?
+  completion_notes                              String?
+  quality_check_passed                          Boolean?
+  customer_approval_required                    Boolean?          @default(false)
+  customer_approved                             Boolean?
+  customer_approval_date                        DateTime?         @db.Timestamptz(6)
+  created_by                                    String?           @db.Uuid
+  modified_by                                   String?           @db.Uuid
+  created_at                                    DateTime?         @default(now()) @db.Timestamptz(6)
+  updated_at                                    DateTime?         @default(now()) @db.Timestamptz(6)
+  contacts                                      contacts?         @relation(fields: [assigned_contact_id], references: [contact_id], onDelete: NoAction, onUpdate: NoAction)
+  suppliers                                     suppliers?        @relation(fields: [assigned_supplier_id], references: [supplier_id], onDelete: NoAction, onUpdate: NoAction)
+  builders                                      builders          @relation(fields: [builder_id], references: [builder_id], onDelete: Cascade, onUpdate: NoAction)
+  users_warranty_work_orders_created_byTousers  users?            @relation("warranty_work_orders_created_byTousers", fields: [created_by], references: [user_id], onDelete: NoAction, onUpdate: NoAction)
+  users_warranty_work_orders_modified_byTousers users?            @relation("warranty_work_orders_modified_byTousers", fields: [modified_by], references: [user_id], onDelete: NoAction, onUpdate: NoAction)
+  warranty_problems                             warranty_problems @relation(fields: [warranty_problem_id], references: [warranty_problem_id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@unique([builder_id, work_order_number])
+  @@index([builder_id], map: "idx_warranty_work_orders_builder_id")
+  @@index([warranty_problem_id], map: "idx_warranty_work_orders_problem_id")
+  @@index([status], map: "idx_warranty_work_orders_status")
+  @@index([assigned_supplier_id], map: "idx_warranty_work_orders_supplier_id")
+}

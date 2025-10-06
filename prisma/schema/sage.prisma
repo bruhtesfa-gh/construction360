@@ -1,0 +1,59 @@
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model sage_intacct_departments {
+  sage_department_id                                String    @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  builder_id                                        String    @db.Uuid
+  department_id                                     String    @db.VarChar(50)
+  department_name                                   String    @db.VarChar(100)
+  parent_department_id                              String?   @db.VarChar(50)
+  is_active                                         Boolean?  @default(true)
+  created_by                                        String?   @db.Uuid
+  modified_by                                       String?   @db.Uuid
+  created_at                                        DateTime? @default(now()) @db.Timestamptz(6)
+  updated_at                                        DateTime? @default(now()) @db.Timestamptz(6)
+  builders                                          builders  @relation(fields: [builder_id], references: [builder_id], onDelete: Cascade, onUpdate: NoAction)
+  users_sage_intacct_departments_created_byTousers  users?    @relation("sage_intacct_departments_created_byTousers", fields: [created_by], references: [user_id], onDelete: NoAction, onUpdate: NoAction)
+  users_sage_intacct_departments_modified_byTousers users?    @relation("sage_intacct_departments_modified_byTousers", fields: [modified_by], references: [user_id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@unique([builder_id, department_id])
+  @@index([builder_id], map: "idx_sage_intacct_departments_builder_id")
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model sage_intacct_entities {
+  sage_entity_id                                 String    @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  builder_id                                     String    @db.Uuid
+  entity_id                                      String    @db.VarChar(50)
+  entity_name                                    String    @db.VarChar(100)
+  entity_type                                    String?   @db.VarChar(50)
+  is_active                                      Boolean?  @default(true)
+  created_by                                     String?   @db.Uuid
+  modified_by                                    String?   @db.Uuid
+  created_at                                     DateTime? @default(now()) @db.Timestamptz(6)
+  updated_at                                     DateTime? @default(now()) @db.Timestamptz(6)
+  builders                                       builders  @relation(fields: [builder_id], references: [builder_id], onDelete: Cascade, onUpdate: NoAction)
+  users_sage_intacct_entities_created_byTousers  users?    @relation("sage_intacct_entities_created_byTousers", fields: [created_by], references: [user_id], onDelete: NoAction, onUpdate: NoAction)
+  users_sage_intacct_entities_modified_byTousers users?    @relation("sage_intacct_entities_modified_byTousers", fields: [modified_by], references: [user_id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@unique([builder_id, entity_id])
+  @@index([builder_id], map: "idx_sage_intacct_entities_builder_id")
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model sage_intacct_locations {
+  sage_location_id                                String    @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  builder_id                                      String    @db.Uuid
+  location_id                                     String    @db.VarChar(50)
+  location_name                                   String    @db.VarChar(100)
+  parent_location_id                              String?   @db.VarChar(50)
+  is_active                                       Boolean?  @default(true)
+  created_by                                      String?   @db.Uuid
+  modified_by                                     String?   @db.Uuid
+  created_at                                      DateTime? @default(now()) @db.Timestamptz(6)
+  updated_at                                      DateTime? @default(now()) @db.Timestamptz(6)
+  builders                                        builders  @relation(fields: [builder_id], references: [builder_id], onDelete: Cascade, onUpdate: NoAction)
+  users_sage_intacct_locations_created_byTousers  users?    @relation("sage_intacct_locations_created_byTousers", fields: [created_by], references: [user_id], onDelete: NoAction, onUpdate: NoAction)
+  users_sage_intacct_locations_modified_byTousers users?    @relation("sage_intacct_locations_modified_byTousers", fields: [modified_by], references: [user_id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@unique([builder_id, location_id])
+  @@index([builder_id], map: "idx_sage_intacct_locations_builder_id")
+}

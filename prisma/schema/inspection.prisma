@@ -1,0 +1,110 @@
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model inspection_checklist_items {
+  inspection_checklist_item_id                        String                @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  builder_id                                          String                @db.Uuid
+  inspection_checklist_id                             String                @db.Uuid
+  item_category                                       String?               @db.VarChar(100)
+  item_name                                           String                @db.VarChar(200)
+  item_description                                    String?
+  item_code                                           String?               @db.VarChar(50)
+  expected_result                                     String?               @db.VarChar(500)
+  item_order                                          Int?
+  is_required                                         Boolean?              @default(true)
+  is_critical                                         Boolean?              @default(false)
+  minimum_grade                                       String?               @db.VarChar(10)
+  points_possible                                     Int?
+  created_by                                          String?               @db.Uuid
+  modified_by                                         String?               @db.Uuid
+  created_at                                          DateTime?             @default(now()) @db.Timestamptz(6)
+  updated_at                                          DateTime?             @default(now()) @db.Timestamptz(6)
+  builders                                            builders              @relation(fields: [builder_id], references: [builder_id], onDelete: Cascade, onUpdate: NoAction)
+  users_inspection_checklist_items_created_byTousers  users?                @relation("inspection_checklist_items_created_byTousers", fields: [created_by], references: [user_id], onDelete: NoAction, onUpdate: NoAction)
+  inspection_checklists                               inspection_checklists @relation(fields: [inspection_checklist_id], references: [inspection_checklist_id], onDelete: Cascade, onUpdate: NoAction)
+  users_inspection_checklist_items_modified_byTousers users?                @relation("inspection_checklist_items_modified_byTousers", fields: [modified_by], references: [user_id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@index([builder_id], map: "idx_inspection_checklist_items_builder_id")
+  @@index([item_category], map: "idx_inspection_checklist_items_category")
+  @@index([inspection_checklist_id], map: "idx_inspection_checklist_items_checklist_id")
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model inspection_checklists {
+  inspection_checklist_id                        String                       @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  builder_id                                     String                       @db.Uuid
+  region_id                                      String?                      @db.Uuid
+  checklist_name                                 String                       @db.VarChar(200)
+  checklist_description                          String?
+  inspection_type                                String                       @db.VarChar(100)
+  construction_stage                             String?                      @db.VarChar(100)
+  is_template                                    Boolean?                     @default(true)
+  is_active                                      Boolean?                     @default(true)
+  version_number                                 String?                      @db.VarChar(20)
+  effective_date                                 DateTime?                    @db.Timestamptz(6)
+  expiration_date                                DateTime?                    @db.Timestamptz(6)
+  created_by                                     String?                      @db.Uuid
+  modified_by                                    String?                      @db.Uuid
+  created_at                                     DateTime?                    @default(now()) @db.Timestamptz(6)
+  updated_at                                     DateTime?                    @default(now()) @db.Timestamptz(6)
+  inspection_checklist_items                     inspection_checklist_items[]
+  builders                                       builders                     @relation(fields: [builder_id], references: [builder_id], onDelete: Cascade, onUpdate: NoAction)
+  users_inspection_checklists_created_byTousers  users?                       @relation("inspection_checklists_created_byTousers", fields: [created_by], references: [user_id], onDelete: NoAction, onUpdate: NoAction)
+  users_inspection_checklists_modified_byTousers users?                       @relation("inspection_checklists_modified_byTousers", fields: [modified_by], references: [user_id], onDelete: NoAction, onUpdate: NoAction)
+  regions                                        regions?                     @relation(fields: [region_id], references: [region_id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@index([builder_id], map: "idx_inspection_checklists_builder_id")
+  @@index([region_id], map: "idx_inspection_checklists_region_id")
+  @@index([inspection_type], map: "idx_inspection_checklists_type")
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model inspection_deficiency_pick_lists {
+  inspection_deficiency_pick_list_id                        String    @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  builder_id                                                String    @db.Uuid
+  deficiency_category                                       String    @db.VarChar(100)
+  deficiency_code                                           String    @db.VarChar(50)
+  deficiency_title                                          String    @db.VarChar(200)
+  deficiency_description                                    String?
+  default_severity                                          String?   @default("medium") @db.VarChar(20)
+  estimated_resolution_hours                                Decimal?  @db.Decimal(5, 2)
+  estimated_cost                                            Decimal?  @db.Decimal(10, 2)
+  common_causes                                             String?
+  resolution_instructions                                   String?
+  is_active                                                 Boolean?  @default(true)
+  created_by                                                String?   @db.Uuid
+  modified_by                                               String?   @db.Uuid
+  created_at                                                DateTime? @default(now()) @db.Timestamptz(6)
+  updated_at                                                DateTime? @default(now()) @db.Timestamptz(6)
+  builders                                                  builders  @relation(fields: [builder_id], references: [builder_id], onDelete: Cascade, onUpdate: NoAction)
+  users_inspection_deficiency_pick_lists_created_byTousers  users?    @relation("inspection_deficiency_pick_lists_created_byTousers", fields: [created_by], references: [user_id], onDelete: NoAction, onUpdate: NoAction)
+  users_inspection_deficiency_pick_lists_modified_byTousers users?    @relation("inspection_deficiency_pick_lists_modified_byTousers", fields: [modified_by], references: [user_id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@unique([builder_id, deficiency_category, deficiency_code], map: "inspection_deficiency_pick_li_builder_id_deficiency_categor_key")
+  @@index([builder_id], map: "idx_inspection_deficiency_pick_lists_builder_id")
+  @@index([deficiency_category], map: "idx_inspection_deficiency_pick_lists_category")
+  @@index([deficiency_code], map: "idx_inspection_deficiency_pick_lists_code")
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model inspection_quality_grades {
+  inspection_quality_grade_id                        String    @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  builder_id                                         String    @db.Uuid
+  grade_code                                         String    @db.VarChar(10)
+  grade_name                                         String    @db.VarChar(50)
+  grade_description                                  String?   @db.VarChar(200)
+  numeric_value                                      Decimal?  @db.Decimal(5, 2)
+  pass_fail_indicator                                Boolean?
+  color_code                                         String?   @db.VarChar(10)
+  display_order                                      Int?
+  is_active                                          Boolean?  @default(true)
+  created_by                                         String?   @db.Uuid
+  modified_by                                        String?   @db.Uuid
+  created_at                                         DateTime? @default(now()) @db.Timestamptz(6)
+  updated_at                                         DateTime? @default(now()) @db.Timestamptz(6)
+  builders                                           builders  @relation(fields: [builder_id], references: [builder_id], onDelete: Cascade, onUpdate: NoAction)
+  users_inspection_quality_grades_created_byTousers  users?    @relation("inspection_quality_grades_created_byTousers", fields: [created_by], references: [user_id], onDelete: NoAction, onUpdate: NoAction)
+  users_inspection_quality_grades_modified_byTousers users?    @relation("inspection_quality_grades_modified_byTousers", fields: [modified_by], references: [user_id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@unique([builder_id, grade_code])
+  @@index([builder_id], map: "idx_inspection_quality_grades_builder_id")
+  @@index([grade_code], map: "idx_inspection_quality_grades_code")
+}

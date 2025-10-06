@@ -1,0 +1,66 @@
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model contact_types {
+  contact_type_id String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  builder_id      String    @db.Uuid
+  contact_type    String    @db.VarChar(20)
+  description     String    @db.VarChar(200)
+  created_at      DateTime? @default(now()) @db.Timestamptz(6)
+  updated_at      DateTime? @default(now()) @db.Timestamptz(6)
+  builders        builders  @relation(fields: [builder_id], references: [builder_id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@unique([builder_id, contact_type])
+  @@index([builder_id], map: "idx_contact_types_builder_id")
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model contacts {
+  contact_id                                        String                   @id(map: "contact_pkey") @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  builder_id                                        String                   @db.Uuid
+  contact_type                                      String?                  @db.VarChar(20)
+  first_name                                        String?                  @db.VarChar(100)
+  last_name                                         String?                  @db.VarChar(100)
+  company_name                                      String?                  @db.VarChar(200)
+  email                                             String?                  @db.VarChar(200)
+  phone                                             String?                  @db.VarChar(50)
+  mobile_phone                                      String?                  @db.VarChar(50)
+  address1                                          String?                  @db.VarChar(100)
+  address2                                          String?                  @db.VarChar(100)
+  city                                              String?                  @db.VarChar(50)
+  state                                             String?                  @db.VarChar(50)
+  zip                                               String?                  @db.VarChar(20)
+  country                                           String?                  @db.VarChar(50)
+  notes                                             String?
+  is_active                                         Boolean?                 @default(true)
+  created_at                                        DateTime?                @default(now()) @db.Timestamptz(6)
+  updated_at                                        DateTime?                @default(now()) @db.Timestamptz(6)
+  builders                                          builders                 @relation(fields: [builder_id], references: [builder_id], onDelete: Cascade, onUpdate: NoAction)
+  contacts_custom_fields                            contacts_custom_fields[]
+  opportunities_opportunities_contact1_idTocontacts opportunities[]          @relation("opportunities_contact1_idTocontacts")
+  opportunities_opportunities_contact2_idTocontacts opportunities[]          @relation("opportunities_contact2_idTocontacts")
+  opportunities_opportunities_contact3_idTocontacts opportunities[]          @relation("opportunities_contact3_idTocontacts")
+  opportunities_opportunities_contact4_idTocontacts opportunities[]          @relation("opportunities_contact4_idTocontacts")
+  opportunities_opportunities_contact5_idTocontacts opportunities[]          @relation("opportunities_contact5_idTocontacts")
+  warranty_work_orders                              warranty_work_orders[]
+
+  @@index([builder_id], map: "idx_contact_builder_id")
+  @@index([email], map: "idx_contacts_email")
+  @@index([last_name, first_name], map: "idx_contacts_name")
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model contacts_custom_fields {
+  contact_custom_field_id String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  builder_id              String    @db.Uuid
+  contact_id              String    @db.Uuid
+  field_name              String    @db.VarChar(100)
+  field_value             String?
+  field_type              String?   @db.VarChar(50)
+  created_at              DateTime? @default(now()) @db.Timestamptz(6)
+  updated_at              DateTime? @default(now()) @db.Timestamptz(6)
+  builders                builders  @relation(fields: [builder_id], references: [builder_id], onDelete: Cascade, onUpdate: NoAction)
+  contacts                contacts  @relation(fields: [contact_id], references: [contact_id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@unique([contact_id, field_name])
+  @@index([builder_id], map: "idx_contacts_custom_fields_builder_id")
+  @@index([contact_id], map: "idx_contacts_custom_fields_contact_id")
+}

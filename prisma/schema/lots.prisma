@@ -1,0 +1,166 @@
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model lot_custom_fields {
+  lot_inventory_custom_field_id String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  builder_id                    String    @db.Uuid
+  lot_id                        String    @db.Uuid
+  field_name                    String    @db.VarChar(100)
+  field_value                   String?
+  field_type                    String?   @db.VarChar(50)
+  created_at                    DateTime? @default(now()) @db.Timestamptz(6)
+  updated_at                    DateTime? @default(now()) @db.Timestamptz(6)
+  lots                          lots      @relation(fields: [lot_id], references: [lot_id], onDelete: Cascade, onUpdate: NoAction)
+  builders                      builders  @relation(fields: [builder_id], references: [builder_id], onDelete: Cascade, onUpdate: NoAction, map: "lot_inventory_custom_fields_builder_id_fkey")
+
+  @@unique([lot_id, field_name], map: "lot_inventory_custom_fields_lot_inventory_id_field_name_key")
+  @@index([builder_id], map: "idx_lot_custom_fields_builder_id")
+  @@index([lot_id], map: "idx_lot_custom_fields_lot_id")
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model lot_required_options {
+  lot_inventory_required_option_id String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  builder_id                       String    @db.Uuid
+  lot_id                           String    @db.Uuid
+  option_id                        String    @db.Uuid
+  quantity                         Decimal?  @db.Decimal(10, 2)
+  created_at                       DateTime? @default(now()) @db.Timestamptz(6)
+  updated_at                       DateTime? @default(now()) @db.Timestamptz(6)
+  builders                         builders  @relation(fields: [builder_id], references: [builder_id], onDelete: Cascade, onUpdate: NoAction, map: "lot_inventory_required_options_builder_id_fkey")
+  lots                             lots      @relation(fields: [lot_id], references: [lot_id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@unique([lot_id, option_id], map: "lot_inventory_required_options_lot_inventory_id_option_id_key")
+  @@index([builder_id], map: "idx_lot_required_options_builder_id")
+  @@index([lot_id], map: "idx_lot_required_options_lot_id")
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model lot_sales_history {
+  lot_inventory_sales_history_id String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  builder_id                     String    @db.Uuid
+  lot_id                         String    @db.Uuid
+  audit_trail_date               DateTime? @default(now()) @db.Timestamptz(6)
+  created_by                     String    @db.Uuid
+  description_of_event           String?   @db.VarChar(200)
+  quote_contract_id              String?   @db.Uuid
+  inventory_home_id              String?   @db.Uuid
+  lot_selling_price_old          Decimal?  @db.Decimal(9, 2)
+  lot_selling_price_new          Decimal?  @db.Decimal(9, 2)
+  created_at                     DateTime? @default(now()) @db.Timestamptz(6)
+  builders                       builders  @relation(fields: [builder_id], references: [builder_id], onDelete: Cascade, onUpdate: NoAction, map: "lot_inventory_sales_history_builder_id_fkey")
+  users                          users     @relation(fields: [created_by], references: [user_id], onDelete: NoAction, onUpdate: NoAction, map: "lot_inventory_sales_history_created_by_fkey")
+  lots                           lots      @relation(fields: [lot_id], references: [lot_id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@index([audit_trail_date], map: "idx_lot_inventory_sales_history_date")
+  @@index([builder_id], map: "idx_lot_sales_history_builder_id")
+  @@index([lot_id], map: "idx_lot_sales_history_lot_id")
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model lot_status {
+  lot_status_id          String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  builder_id             String    @db.Uuid
+  division_id            String    @db.Uuid
+  lot_status             String    @db.VarChar(50)
+  lot_status_custom_desc String    @db.VarChar(50)
+  color_code             String?   @db.VarChar(50)
+  created_at             DateTime? @default(now()) @db.Timestamptz(6)
+  updated_at             DateTime? @default(now()) @db.Timestamptz(6)
+  builders               builders  @relation(fields: [builder_id], references: [builder_id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@unique([builder_id, division_id, lot_status])
+  @@index([builder_id], map: "idx_lot_status_builder_id")
+  @@index([division_id], map: "idx_lot_status_division_id")
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model lots {
+  lot_id                        String                    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  builder_id                    String                    @db.Uuid
+  region_id                     String                    @db.Uuid
+  community_id                  String                    @db.Uuid
+  community_phase_id            String                    @db.Uuid
+  lot_status                    String                    @db.VarChar(50)
+  lot                           String                    @db.VarChar(50)
+  block                         String                    @db.VarChar(50)
+  job_number                    String                    @db.VarChar(50)
+  legal_plan                    String                    @db.VarChar(50)
+  lot_info_tooltip              String?
+  address1                      String?                   @db.VarChar(50)
+  address2                      String?                   @db.VarChar(50)
+  city                          String?                   @db.VarChar(50)
+  state                         String?                   @db.VarChar(50)
+  zip                           String?                   @db.VarChar(50)
+  legal_address                 String?                   @db.VarChar(50)
+  county                        String?                   @db.VarChar(50)
+  country                       String?                   @db.VarChar(50)
+  tract                         String?                   @db.VarChar(50)
+  floor_plan_id                 String?                   @db.Uuid
+  garage_orientation            String?                   @db.VarChar(50)
+  purchased_from                String?                   @db.VarChar(100)
+  purchase_price                Decimal?                  @db.Decimal(12, 2)
+  is_available_for_sale         Boolean?                  @default(true)
+  construction_stage            Int?                      @default(0)
+  lot_selling_price             Decimal?                  @db.Decimal(12, 2)
+  selling_adjustment            Decimal?                  @db.Decimal(12, 2)
+  direction_facing              String?                   @db.VarChar(50)
+  building_floor                String?                   @db.VarChar(50)
+  unit_number                   String?                   @db.VarChar(50)
+  legal_unit                    String?                   @db.VarChar(50)
+  monthly_hoa_fees              Decimal?                  @db.Decimal(9, 2)
+  annual_hoa_fees               Decimal?                  @db.Decimal(9, 2)
+  hoa_id                        String?                   @db.Uuid
+  comments                      String?
+  lot_type                      String?                   @db.VarChar(50)
+  front_length                  Decimal?                  @db.Decimal(9, 2)
+  back_length                   Decimal?                  @db.Decimal(9, 2)
+  left_side_length              Decimal?                  @db.Decimal(9, 2)
+  right_side_length             Decimal?                  @db.Decimal(9, 2)
+  exterior_color                String?                   @db.VarChar(200)
+  rear_lot_inventory_id         String?                   @db.Uuid
+  total_area                    Decimal?                  @db.Decimal(9, 2)
+  useable_area                  Decimal?                  @db.Decimal(9, 2)
+  left_side_lot_inventory_id    String?                   @db.Uuid
+  right_side_lot_inventory_id   String?                   @db.Uuid
+  plat                          String?                   @db.VarChar(50)
+  plat_book                     String?                   @db.VarChar(50)
+  plat_page                     String?                   @db.VarChar(50)
+  facing_lot_inventory_id       String?                   @db.Uuid
+  quote_contract_id             String?                   @db.Uuid
+  job_costed_value              Decimal?                  @db.Decimal(12, 2)
+  inventory_home_id             String?                   @db.Uuid
+  marketing_info                String?
+  lender_id                     String?                   @db.Uuid
+  loan_draw_template_id         String?                   @db.Uuid
+  total_loan_amount             Decimal?                  @default(0) @db.Decimal(12, 2)
+  loan_draw_lot_payout          Decimal?                  @default(0) @db.Decimal(12, 2)
+  home_id                       String?                   @db.Uuid
+  initial_loan_draw             Decimal?                  @default(0) @db.Decimal(12, 2)
+  geo_location                  Unsupported("geography")?
+  lot_map_x_coordinate          Decimal?                  @db.Decimal(18, 4)
+  lot_map_y_coordinate          Decimal?                  @db.Decimal(18, 4)
+  created_by                    String?                   @db.Uuid
+  modified_by                   String?                   @db.Uuid
+  created_at                    DateTime?                 @default(now()) @db.Timestamptz(6)
+  updated_at                    DateTime?                 @default(now()) @db.Timestamptz(6)
+  division_id                   String?                   @db.Uuid
+  inventory_homes               inventory_homes[]
+  lot_custom_fields             lot_custom_fields[]
+  lot_required_options          lot_required_options[]
+  lot_sales_history             lot_sales_history[]
+  divisions                     divisions?                @relation(fields: [division_id], references: [division_id], onDelete: Cascade, onUpdate: NoAction, map: "lot_division_id_fkey")
+  builders                      builders                  @relation(fields: [builder_id], references: [builder_id], onDelete: Cascade, onUpdate: NoAction, map: "lot_inventory_builder_id_fkey")
+  communities                   communities               @relation(fields: [community_id], references: [community_id], onDelete: NoAction, onUpdate: NoAction, map: "lot_inventory_community_id_fkey")
+  community_phase               community_phase           @relation(fields: [community_phase_id], references: [community_phase_id], onDelete: NoAction, onUpdate: NoAction, map: "lot_inventory_community_phase_id_fkey")
+  users_lots_created_byTousers  users?                    @relation("lots_created_byTousers", fields: [created_by], references: [user_id], onDelete: NoAction, onUpdate: NoAction, map: "lot_inventory_created_by_fkey")
+  users_lots_modified_byTousers users?                    @relation("lots_modified_byTousers", fields: [modified_by], references: [user_id], onDelete: NoAction, onUpdate: NoAction, map: "lot_inventory_modified_by_fkey")
+  regions                       regions                   @relation(fields: [region_id], references: [region_id], onDelete: NoAction, onUpdate: NoAction, map: "lot_inventory_region_id_fkey")
+  quote_contracts               quote_contracts[]
+
+  @@index([geo_location], map: "idx_lot_geo_location", type: Gist)
+  @@index([job_number], map: "idx_lot_job_number")
+  @@index([lot, block], map: "idx_lot_lot_block")
+  @@index([builder_id], map: "idx_lots_builder_id")
+  @@index([community_id], map: "idx_lots_community_id")
+  @@index([division_id], map: "idx_lots_division_id")
+}

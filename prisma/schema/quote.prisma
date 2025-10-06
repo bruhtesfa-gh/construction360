@@ -1,0 +1,214 @@
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model quote_contract_co_master {
+  quote_contract_co_master_id                       String            @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  builder_id                                        String            @db.Uuid
+  quote_contract_id                                 String            @db.Uuid
+  change_order_number                               Int
+  co_date                                           DateTime?         @db.Timestamptz(6)
+  description                                       String?           @db.VarChar(500)
+  amount                                            Decimal?          @db.Decimal(12, 2)
+  status                                            String?           @db.VarChar(50)
+  approved_date                                     DateTime?         @db.Timestamptz(6)
+  approved_by                                       String?           @db.Uuid
+  created_by                                        String            @db.Uuid
+  modified_by                                       String            @db.Uuid
+  created_at                                        DateTime?         @default(now()) @db.Timestamptz(6)
+  updated_at                                        DateTime?         @default(now()) @db.Timestamptz(6)
+  home_selections                                   home_selections[]
+  users_quote_contract_co_master_approved_byTousers users?            @relation("quote_contract_co_master_approved_byTousers", fields: [approved_by], references: [user_id], onDelete: NoAction, onUpdate: NoAction)
+  builders                                          builders          @relation(fields: [builder_id], references: [builder_id], onDelete: Cascade, onUpdate: NoAction)
+  users_quote_contract_co_master_created_byTousers  users             @relation("quote_contract_co_master_created_byTousers", fields: [created_by], references: [user_id], onDelete: NoAction, onUpdate: NoAction)
+  users_quote_contract_co_master_modified_byTousers users             @relation("quote_contract_co_master_modified_byTousers", fields: [modified_by], references: [user_id], onDelete: NoAction, onUpdate: NoAction)
+  quote_contracts                                   quote_contracts   @relation(fields: [quote_contract_id], references: [quote_contract_id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@index([builder_id], map: "idx_quote_contract_co_master_builder_id")
+  @@index([quote_contract_id], map: "idx_quote_contract_co_master_quote_contract_id")
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model quote_contract_deposits {
+  quote_contract_deposit_id                         String          @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  builder_id                                        String          @db.Uuid
+  quote_contract_id                                 String          @db.Uuid
+  deposit_type                                      String          @db.VarChar(100)
+  deposit_amount                                    Decimal         @db.Decimal(12, 2)
+  deposit_percentage                                Decimal?        @db.Decimal(5, 2)
+  due_date                                          DateTime?       @db.Timestamptz(6)
+  received_date                                     DateTime?       @db.Timestamptz(6)
+  payment_method                                    String?         @db.VarChar(50)
+  check_number                                      String?         @db.VarChar(50)
+  reference_number                                  String?         @db.VarChar(100)
+  deposit_status                                    String          @default("pending") @db.VarChar(50)
+  is_refundable                                     Boolean?        @default(true)
+  refund_conditions                                 String?
+  notes                                             String?
+  processed_by                                      String?         @db.Uuid
+  created_by                                        String?         @db.Uuid
+  modified_by                                       String?         @db.Uuid
+  created_at                                        DateTime?       @default(now()) @db.Timestamptz(6)
+  updated_at                                        DateTime?       @default(now()) @db.Timestamptz(6)
+  builders                                          builders        @relation(fields: [builder_id], references: [builder_id], onDelete: Cascade, onUpdate: NoAction)
+  users_quote_contract_deposits_created_byTousers   users?          @relation("quote_contract_deposits_created_byTousers", fields: [created_by], references: [user_id], onDelete: NoAction, onUpdate: NoAction)
+  users_quote_contract_deposits_modified_byTousers  users?          @relation("quote_contract_deposits_modified_byTousers", fields: [modified_by], references: [user_id], onDelete: NoAction, onUpdate: NoAction)
+  users_quote_contract_deposits_processed_byTousers users?          @relation("quote_contract_deposits_processed_byTousers", fields: [processed_by], references: [user_id], onDelete: NoAction, onUpdate: NoAction)
+  quote_contracts                                   quote_contracts @relation(fields: [quote_contract_id], references: [quote_contract_id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@index([builder_id], map: "idx_quote_contract_deposits_builder_id")
+  @@index([quote_contract_id], map: "idx_quote_contract_deposits_contract_id")
+  @@index([deposit_status], map: "idx_quote_contract_deposits_status")
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model quote_contract_room_sizes {
+  quote_contract_room_size_id                        String          @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  builder_id                                         String          @db.Uuid
+  quote_contract_id                                  String          @db.Uuid
+  room_name                                          String          @db.VarChar(200)
+  room_type                                          String?         @db.VarChar(100)
+  floor_level                                        String?         @db.VarChar(50)
+  length_feet                                        Decimal?        @db.Decimal(8, 2)
+  width_feet                                         Decimal?        @db.Decimal(8, 2)
+  area_square_feet                                   Decimal?        @db.Decimal(10, 2)
+  ceiling_height_feet                                Decimal?        @db.Decimal(6, 2)
+  window_count                                       Int?
+  door_count                                         Int?
+  flooring_type                                      String?         @db.VarChar(100)
+  ceiling_type                                       String?         @db.VarChar(100)
+  wall_finish                                        String?         @db.VarChar(100)
+  electrical_outlets                                 Int?
+  special_features                                   String?
+  room_notes                                         String?
+  room_order                                         Int?
+  created_by                                         String?         @db.Uuid
+  modified_by                                        String?         @db.Uuid
+  created_at                                         DateTime?       @default(now()) @db.Timestamptz(6)
+  updated_at                                         DateTime?       @default(now()) @db.Timestamptz(6)
+  builders                                           builders        @relation(fields: [builder_id], references: [builder_id], onDelete: Cascade, onUpdate: NoAction)
+  users_quote_contract_room_sizes_created_byTousers  users?          @relation("quote_contract_room_sizes_created_byTousers", fields: [created_by], references: [user_id], onDelete: NoAction, onUpdate: NoAction)
+  users_quote_contract_room_sizes_modified_byTousers users?          @relation("quote_contract_room_sizes_modified_byTousers", fields: [modified_by], references: [user_id], onDelete: NoAction, onUpdate: NoAction)
+  quote_contracts                                    quote_contracts @relation(fields: [quote_contract_id], references: [quote_contract_id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@index([builder_id], map: "idx_quote_contract_room_sizes_builder_id")
+  @@index([quote_contract_id], map: "idx_quote_contract_room_sizes_contract_id")
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model quote_contracts {
+  quote_contract_id                            String                          @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  builder_id                                   String                          @db.Uuid
+  region_id                                    String                          @db.Uuid
+  community_id                                 String?                         @db.Uuid
+  opportunity_id                               String?                         @db.Uuid
+  lot_inventory_id                             String?                         @db.Uuid
+  contract_number                              String?                         @db.VarChar(50)
+  contract_date                                DateTime?                       @db.Date
+  contract_type                                String?                         @db.VarChar(50)
+  status                                       String?                         @db.VarChar(50)
+  floor_plan_id                                String?                         @db.Uuid
+  elevation_id                                 String?                         @db.Uuid
+  base_price                                   Decimal?                        @db.Decimal(12, 2)
+  lot_premium                                  Decimal?                        @db.Decimal(12, 2)
+  options_price                                Decimal?                        @db.Decimal(12, 2)
+  total_price                                  Decimal?                        @db.Decimal(12, 2)
+  deposit_amount                               Decimal?                        @db.Decimal(12, 2)
+  deposit_received                             Decimal?                        @db.Decimal(12, 2)
+  financing_type                               String?                         @db.VarChar(50)
+  lender_id                                    String?                         @db.Uuid
+  sales_person_id                              String?                         @db.Uuid
+  contract_signed_date                         DateTime?                       @db.Date
+  estimated_close_date                         DateTime?                       @db.Date
+  actual_close_date                            DateTime?                       @db.Date
+  created_by                                   String                          @db.Uuid
+  modified_by                                  String                          @db.Uuid
+  created_at                                   DateTime?                       @default(now()) @db.Timestamptz(6)
+  updated_at                                   DateTime?                       @default(now()) @db.Timestamptz(6)
+  home_selections                              home_selections[]
+  job_estimate_items                           job_estimate_items[]
+  po_items                                     po_items[]
+  po_items_co                                  po_items_co[]
+  quote_contract_co_master                     quote_contract_co_master[]
+  quote_contract_deposits                      quote_contract_deposits[]
+  quote_contract_room_sizes                    quote_contract_room_sizes[]
+  builders                                     builders                        @relation(fields: [builder_id], references: [builder_id], onDelete: Cascade, onUpdate: NoAction)
+  communities                                  communities?                    @relation(fields: [community_id], references: [community_id], onDelete: NoAction, onUpdate: NoAction)
+  users_quote_contracts_created_byTousers      users                           @relation("quote_contracts_created_byTousers", fields: [created_by], references: [user_id], onDelete: NoAction, onUpdate: NoAction)
+  elevations                                   elevations?                     @relation(fields: [elevation_id], references: [elevation_id], onDelete: NoAction, onUpdate: NoAction)
+  floor_plan_community                         floor_plan_community?           @relation(fields: [floor_plan_id], references: [floor_plan_community_id], onDelete: NoAction, onUpdate: NoAction)
+  lots                                         lots?                           @relation(fields: [lot_inventory_id], references: [lot_id], onDelete: NoAction, onUpdate: NoAction, map: "quote_contracts_lot_id_fkey")
+  users_quote_contracts_modified_byTousers     users                           @relation("quote_contracts_modified_byTousers", fields: [modified_by], references: [user_id], onDelete: NoAction, onUpdate: NoAction)
+  opportunities                                opportunities?                  @relation(fields: [opportunity_id], references: [opportunity_id], onDelete: NoAction, onUpdate: NoAction)
+  regions                                      regions                         @relation(fields: [region_id], references: [region_id], onDelete: NoAction, onUpdate: NoAction)
+  users_quote_contracts_sales_person_idTousers users?                          @relation("quote_contracts_sales_person_idTousers", fields: [sales_person_id], references: [user_id], onDelete: NoAction, onUpdate: NoAction)
+  quote_contracts_allowances                   quote_contracts_allowances[]
+  quote_contracts_custom_fields                quote_contracts_custom_fields[]
+  schedules                                    schedules[]
+
+  @@index([builder_id], map: "idx_quote_contracts_builder_id")
+  @@index([contract_number], map: "idx_quote_contracts_contract_number")
+  @@index([opportunity_id], map: "idx_quote_contracts_opportunity_id")
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model quote_contracts_allowances {
+  quote_contract_allowance_id                         String          @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  builder_id                                          String          @db.Uuid
+  quote_contract_id                                   String          @db.Uuid
+  allowance_category                                  String          @db.VarChar(100)
+  allowance_name                                      String          @db.VarChar(200)
+  allowance_description                               String?
+  allowance_amount                                    Decimal         @db.Decimal(12, 2)
+  allowance_type                                      String?         @default("standard") @db.VarChar(50)
+  unit_of_measure                                     String?         @db.VarChar(50)
+  quantity                                            Decimal?        @default(1) @db.Decimal(10, 4)
+  unit_cost                                           Decimal?        @db.Decimal(10, 4)
+  is_taxable                                          Boolean?        @default(true)
+  tax_rate                                            Decimal?        @db.Decimal(5, 4)
+  is_used                                             Boolean?        @default(false)
+  used_amount                                         Decimal?        @default(0) @db.Decimal(12, 2)
+  remaining_amount                                    Decimal?        @db.Decimal(12, 2)
+  notes                                               String?
+  allowance_order                                     Int?
+  created_by                                          String?         @db.Uuid
+  modified_by                                         String?         @db.Uuid
+  created_at                                          DateTime?       @default(now()) @db.Timestamptz(6)
+  updated_at                                          DateTime?       @default(now()) @db.Timestamptz(6)
+  builders                                            builders        @relation(fields: [builder_id], references: [builder_id], onDelete: Cascade, onUpdate: NoAction)
+  users_quote_contracts_allowances_created_byTousers  users?          @relation("quote_contracts_allowances_created_byTousers", fields: [created_by], references: [user_id], onDelete: NoAction, onUpdate: NoAction)
+  users_quote_contracts_allowances_modified_byTousers users?          @relation("quote_contracts_allowances_modified_byTousers", fields: [modified_by], references: [user_id], onDelete: NoAction, onUpdate: NoAction)
+  quote_contracts                                     quote_contracts @relation(fields: [quote_contract_id], references: [quote_contract_id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@index([builder_id], map: "idx_quote_contracts_allowances_builder_id")
+  @@index([allowance_category], map: "idx_quote_contracts_allowances_category")
+  @@index([quote_contract_id], map: "idx_quote_contracts_allowances_contract_id")
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model quote_contracts_custom_fields {
+  quote_contract_custom_field_id                         String          @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  builder_id                                             String          @db.Uuid
+  quote_contract_id                                      String          @db.Uuid
+  field_name                                             String          @db.VarChar(100)
+  field_label                                            String?         @db.VarChar(200)
+  field_type                                             String          @db.VarChar(50)
+  field_value                                            String?
+  field_options                                          Json?
+  field_validation                                       Json?
+  field_category                                         String?         @db.VarChar(100)
+  field_section                                          String?         @db.VarChar(100)
+  field_order                                            Int?
+  is_required                                            Boolean?        @default(false)
+  is_visible                                             Boolean?        @default(true)
+  help_text                                              String?
+  created_by                                             String?         @db.Uuid
+  modified_by                                            String?         @db.Uuid
+  created_at                                             DateTime?       @default(now()) @db.Timestamptz(6)
+  updated_at                                             DateTime?       @default(now()) @db.Timestamptz(6)
+  builders                                               builders        @relation(fields: [builder_id], references: [builder_id], onDelete: Cascade, onUpdate: NoAction)
+  users_quote_contracts_custom_fields_created_byTousers  users?          @relation("quote_contracts_custom_fields_created_byTousers", fields: [created_by], references: [user_id], onDelete: NoAction, onUpdate: NoAction)
+  users_quote_contracts_custom_fields_modified_byTousers users?          @relation("quote_contracts_custom_fields_modified_byTousers", fields: [modified_by], references: [user_id], onDelete: NoAction, onUpdate: NoAction)
+  quote_contracts                                        quote_contracts @relation(fields: [quote_contract_id], references: [quote_contract_id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@index([builder_id], map: "idx_quote_contracts_custom_fields_builder_id")
+  @@index([field_category], map: "idx_quote_contracts_custom_fields_category")
+  @@index([quote_contract_id], map: "idx_quote_contracts_custom_fields_contract_id")
+}

@@ -1,0 +1,496 @@
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model schedule_master_qc_items {
+  qc_item_id                  Int                         @id @default(autoincrement())
+  builder_id                  String                      @db.Uuid
+  qc_section_id               Int
+  description                 String?                     @db.VarChar(200)
+  sort_order                  Int?
+  created_date                DateTime?                   @default(now()) @db.Timestamp(6)
+  modified_date               DateTime?                   @default(now()) @db.Timestamp(6)
+  builders                    builders                    @relation(fields: [builder_id], references: [builder_id], onDelete: Cascade, onUpdate: NoAction)
+  schedule_master_qc_sections schedule_master_qc_sections @relation(fields: [qc_section_id], references: [qc_section_id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@index([builder_id], map: "idx_schedule_master_qc_items_builder_id")
+  @@index([qc_section_id], map: "idx_schedule_master_qc_items_qc_section_id")
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model schedule_master_qc_lists {
+  qc_list_id                  Int                           @id @default(autoincrement())
+  builder_id                  String                        @db.Uuid
+  description                 String?                       @db.VarChar(200)
+  created_date                DateTime?                     @default(now()) @db.Timestamp(6)
+  modified_date               DateTime?                     @default(now()) @db.Timestamp(6)
+  builders                    builders                      @relation(fields: [builder_id], references: [builder_id], onDelete: Cascade, onUpdate: NoAction)
+  schedule_master_qc_sections schedule_master_qc_sections[]
+  schedule_master_task_list   schedule_master_task_list[]
+  schedule_tasks              schedule_tasks[]
+  schedule_template_tasks     schedule_template_tasks[]
+
+  @@index([builder_id], map: "idx_schedule_master_qc_lists_builder_id")
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model schedule_master_qc_sections {
+  qc_section_id            Int                        @id @default(autoincrement())
+  builder_id               String                     @db.Uuid
+  qc_list_id               Int
+  description              String?                    @db.VarChar(200)
+  sort_order               Int?
+  created_date             DateTime?                  @default(now()) @db.Timestamp(6)
+  modified_date            DateTime?                  @default(now()) @db.Timestamp(6)
+  schedule_master_qc_items schedule_master_qc_items[]
+  builders                 builders                   @relation(fields: [builder_id], references: [builder_id], onDelete: Cascade, onUpdate: NoAction)
+  schedule_master_qc_lists schedule_master_qc_lists   @relation(fields: [qc_list_id], references: [qc_list_id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@index([builder_id], map: "idx_schedule_master_qc_sections_builder_id")
+  @@index([qc_list_id], map: "idx_schedule_master_qc_sections_qc_list_id")
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model schedule_master_task_list {
+  schedule_master_task_id                                                         String                      @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  builder_id                                                                      String                      @db.Uuid
+  region_id                                                                       String                      @db.Uuid
+  description                                                                     String?                     @db.VarChar(200)
+  parent_id                                                                       String?                     @db.Uuid
+  index_in_parent                                                                 Int?
+  duration                                                                        Int?
+  lag_days                                                                        Int?
+  jc_cost_code                                                                    String?                     @db.VarChar(40)
+  qc_list_id                                                                      Int?
+  sort_order                                                                      Int?
+  display_level                                                                   Int?
+  is_milestone                                                                    Boolean?                    @default(false)
+  po_index                                                                        String?                     @db.VarChar(40)
+  pay_point_number                                                                Int?
+  notice_lead_time                                                                Int?
+  notification_notes                                                              String?                     @db.VarChar(1000)
+  is_seasonal                                                                     Boolean?                    @default(false)
+  construction_stage_cutoff                                                       Int?
+  prompt_user_to_take_photos                                                      Boolean?                    @default(false)
+  visible_to_customer                                                             Boolean?                    @default(false)
+  created_date                                                                    DateTime?                   @default(now()) @db.Timestamp(6)
+  modified_date                                                                   DateTime?                   @default(now()) @db.Timestamp(6)
+  builders                                                                        builders                    @relation(fields: [builder_id], references: [builder_id], onDelete: Cascade, onUpdate: NoAction)
+  schedule_master_task_list                                                       schedule_master_task_list?  @relation("schedule_master_task_listToschedule_master_task_list", fields: [parent_id], references: [schedule_master_task_id], onDelete: Cascade, onUpdate: NoAction)
+  other_schedule_master_task_list                                                 schedule_master_task_list[] @relation("schedule_master_task_listToschedule_master_task_list")
+  schedule_master_qc_lists                                                        schedule_master_qc_lists?   @relation(fields: [qc_list_id], references: [qc_list_id], onUpdate: NoAction)
+  regions                                                                         regions                     @relation(fields: [region_id], references: [region_id], onDelete: Cascade, onUpdate: NoAction)
+  schedule_templates_schedule_templates_finish_task_idToschedule_master_task_list schedule_templates[]        @relation("schedule_templates_finish_task_idToschedule_master_task_list")
+  schedule_templates_schedule_templates_start_task_idToschedule_master_task_list  schedule_templates[]        @relation("schedule_templates_start_task_idToschedule_master_task_list")
+
+  @@index([builder_id], map: "idx_schedule_master_task_list_builder_id")
+  @@index([parent_id], map: "idx_schedule_master_task_list_parent_id")
+  @@index([region_id], map: "idx_schedule_master_task_list_region_id")
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model schedule_qc_sections {
+  qc_section_id          Int                      @id @default(autoincrement())
+  builder_id             String                   @db.Uuid
+  schedule_task_id       String                   @db.Uuid
+  description            String?                  @db.VarChar(50)
+  sort_order             Int?
+  created_date           DateTime?                @default(now()) @db.Timestamp(6)
+  modified_date          DateTime?                @default(now()) @db.Timestamp(6)
+  builders               builders                 @relation(fields: [builder_id], references: [builder_id], onDelete: Cascade, onUpdate: NoAction)
+  schedule_tasks         schedule_tasks           @relation(fields: [schedule_task_id], references: [schedule_task_id], onDelete: Cascade, onUpdate: NoAction)
+  schedule_task_qc_items schedule_task_qc_items[]
+
+  @@index([builder_id], map: "idx_schedule_qc_sections_builder_id")
+  @@index([schedule_task_id], map: "idx_schedule_qc_sections_schedule_task_id")
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model schedule_task_activity_log {
+  task_activity_log_id                                    BigInt          @id @default(autoincrement())
+  builder_id                                              String          @db.Uuid
+  schedule_task_id                                        String?         @db.Uuid
+  po_number                                               String?         @db.VarChar(40)
+  entry_type                                              String?         @db.VarChar(20)
+  point_of_origin                                         Int
+  builder_user_id                                         String?         @db.Uuid
+  builders_supplier_id                                    String?         @db.Uuid
+  supplier_user_name                                      String?         @db.VarChar(200)
+  builder_comments                                        String?
+  builder_comment_date                                    DateTime?       @db.Timestamp(6)
+  supplier_comments                                       String?
+  supplier_comment_date                                   DateTime?       @db.Timestamp(6)
+  created_by                                              String?         @db.Uuid
+  created_date                                            DateTime?       @default(now()) @db.Timestamp(6)
+  hide_on_supplier_portal                                 Boolean?        @default(false)
+  modified_date                                           DateTime?       @default(now()) @db.Timestamp(6)
+  builders                                                builders        @relation(fields: [builder_id], references: [builder_id], onDelete: Cascade, onUpdate: NoAction)
+  users_schedule_task_activity_log_builder_user_idTousers users?          @relation("schedule_task_activity_log_builder_user_idTousers", fields: [builder_user_id], references: [user_id], onUpdate: NoAction)
+  suppliers                                               suppliers?      @relation(fields: [builders_supplier_id], references: [supplier_id], onUpdate: NoAction)
+  users_schedule_task_activity_log_created_byTousers      users?          @relation("schedule_task_activity_log_created_byTousers", fields: [created_by], references: [user_id], onUpdate: NoAction)
+  schedule_tasks                                          schedule_tasks? @relation(fields: [schedule_task_id], references: [schedule_task_id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@index([builder_id], map: "idx_schedule_task_activity_log_builder_id")
+  @@index([po_number], map: "idx_schedule_task_activity_log_po_number")
+  @@index([schedule_task_id], map: "idx_schedule_task_activity_log_schedule_task_id")
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model schedule_task_constraints {
+  constraint_id                                                                Int            @id @default(autoincrement())
+  builder_id                                                                   String         @db.Uuid
+  constraint_type                                                              String         @db.VarChar(10)
+  schedule_task_id                                                             String         @db.Uuid
+  predecessor_task_id                                                          String         @db.Uuid
+  created_date                                                                 DateTime?      @default(now()) @db.Timestamp(6)
+  modified_date                                                                DateTime?      @default(now()) @db.Timestamp(6)
+  builders                                                                     builders       @relation(fields: [builder_id], references: [builder_id], onDelete: Cascade, onUpdate: NoAction)
+  schedule_tasks_schedule_task_constraints_predecessor_task_idToschedule_tasks schedule_tasks @relation("schedule_task_constraints_predecessor_task_idToschedule_tasks", fields: [predecessor_task_id], references: [schedule_task_id], onDelete: Cascade, onUpdate: NoAction)
+  schedule_tasks_schedule_task_constraints_schedule_task_idToschedule_tasks    schedule_tasks @relation("schedule_task_constraints_schedule_task_idToschedule_tasks", fields: [schedule_task_id], references: [schedule_task_id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@unique([constraint_type, schedule_task_id, predecessor_task_id])
+  @@index([builder_id], map: "idx_schedule_task_constraints_builder_id")
+  @@index([predecessor_task_id], map: "idx_schedule_task_constraints_predecessor_task_id")
+  @@index([schedule_task_id], map: "idx_schedule_task_constraints_schedule_task_id")
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model schedule_task_history_log {
+  task_history_log_id                                     BigInt         @id @default(autoincrement())
+  builder_id                                              String         @db.Uuid
+  schedule_task_id                                        String         @db.Uuid
+  log_date                                                DateTime?      @db.Date
+  log_entry_type                                          String?        @db.VarChar(20)
+  action                                                  String?        @db.VarChar(50)
+  log_notes                                               String?
+  builder_user_id                                         String?        @db.Uuid
+  supplier_status                                         String?        @db.VarChar(50)
+  builder_status                                          String?        @db.VarChar(50)
+  supplier_user_id                                        String?        @db.Uuid
+  created_date                                            DateTime?      @default(now()) @db.Timestamp(6)
+  modified_date                                           DateTime?      @default(now()) @db.Timestamp(6)
+  builders                                                builders       @relation(fields: [builder_id], references: [builder_id], onDelete: Cascade, onUpdate: NoAction)
+  users_schedule_task_history_log_builder_user_idTousers  users?         @relation("schedule_task_history_log_builder_user_idTousers", fields: [builder_user_id], references: [user_id], onUpdate: NoAction)
+  schedule_tasks                                          schedule_tasks @relation(fields: [schedule_task_id], references: [schedule_task_id], onDelete: Cascade, onUpdate: NoAction)
+  users_schedule_task_history_log_supplier_user_idTousers users?         @relation("schedule_task_history_log_supplier_user_idTousers", fields: [supplier_user_id], references: [user_id], onUpdate: NoAction)
+
+  @@index([builder_id], map: "idx_schedule_task_history_log_builder_id")
+  @@index([log_date], map: "idx_schedule_task_history_log_log_date")
+  @@index([schedule_task_id], map: "idx_schedule_task_history_log_schedule_task_id")
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model schedule_task_notifications {
+  notification_id         BigInt          @id @default(autoincrement())
+  builder_id              String          @db.Uuid
+  schedule_task_id        String?         @db.Uuid
+  builders_supplier_id    String?         @db.Uuid
+  delivery_method_id      Int?
+  delivery_address        String?         @db.VarChar(500)
+  delivery_date           DateTime?       @db.Timestamp(6)
+  current_start           DateTime?       @db.Timestamp(6)
+  current_finish          DateTime?       @db.Timestamp(6)
+  previous_start          DateTime?       @db.Timestamp(6)
+  previous_finish         DateTime?       @db.Timestamp(6)
+  notification_type_id    Int?
+  created_by              String?         @db.Uuid
+  created_date            DateTime?       @default(now()) @db.Timestamp(6)
+  hide_on_supplier_portal Boolean?        @default(false)
+  modified_date           DateTime?       @default(now()) @db.Timestamp(6)
+  builders                builders        @relation(fields: [builder_id], references: [builder_id], onDelete: Cascade, onUpdate: NoAction)
+  suppliers               suppliers?      @relation(fields: [builders_supplier_id], references: [supplier_id], onUpdate: NoAction)
+  users                   users?          @relation(fields: [created_by], references: [user_id], onUpdate: NoAction)
+  schedule_tasks          schedule_tasks? @relation(fields: [schedule_task_id], references: [schedule_task_id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@index([builder_id], map: "idx_schedule_task_notifications_builder_id")
+  @@index([delivery_date], map: "idx_schedule_task_notifications_delivery_date")
+  @@index([schedule_task_id], map: "idx_schedule_task_notifications_schedule_task_id")
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model schedule_task_qc_items {
+  qc_item_id           Int                  @id @default(autoincrement())
+  builder_id           String               @db.Uuid
+  schedule_task_id     String               @db.Uuid
+  qc_section_id        Int
+  description          String?              @db.VarChar(200)
+  comments             String?              @db.VarChar(2000)
+  sort_order           Int?
+  completed            Boolean?             @default(false)
+  completed_date       DateTime?            @db.Timestamp(6)
+  completed_by         String?              @db.Uuid
+  has_attachments      Boolean?             @default(false)
+  created_date         DateTime?            @default(now()) @db.Timestamp(6)
+  modified_date        DateTime?            @default(now()) @db.Timestamp(6)
+  builders             builders             @relation(fields: [builder_id], references: [builder_id], onDelete: Cascade, onUpdate: NoAction)
+  users                users?               @relation(fields: [completed_by], references: [user_id], onUpdate: NoAction)
+  schedule_qc_sections schedule_qc_sections @relation(fields: [qc_section_id], references: [qc_section_id], onDelete: Cascade, onUpdate: NoAction)
+  schedule_tasks       schedule_tasks       @relation(fields: [schedule_task_id], references: [schedule_task_id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@index([builder_id], map: "idx_schedule_task_qc_items_builder_id")
+  @@index([qc_section_id], map: "idx_schedule_task_qc_items_qc_section_id")
+  @@index([schedule_task_id], map: "idx_schedule_task_qc_items_schedule_task_id")
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model schedule_tasks {
+  schedule_task_id                                                                        String                        @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  builder_id                                                                              String                        @db.Uuid
+  schedule_id                                                                             String                        @db.Uuid
+  job_number                                                                              String?                       @db.VarChar(50)
+  unit_number                                                                             String?                       @db.VarChar(20)
+  schedule_master_task_id                                                                 String                        @db.Uuid
+  user_supplied_code                                                                      String?                       @db.VarChar(20)
+  parent_task_id                                                                          String?                       @db.Uuid
+  index_in_parent                                                                         Int?
+  display_level                                                                           Int?
+  sort_order                                                                              Int?
+  task_type                                                                               String?                       @db.VarChar(10)
+  is_warranty_task                                                                        Boolean?                      @default(false)
+  warranty_wo                                                                             BigInt?
+  po_index                                                                                String?                       @db.VarChar(40)
+  pay_point_number                                                                        Int?
+  description                                                                             String?                       @db.VarChar(200)
+  is_on_hold                                                                              Boolean?                      @default(false)
+  on_hold_by                                                                              String?                       @db.Uuid
+  on_hold_date                                                                            DateTime?                     @db.Timestamp(6)
+  lock_task_dates                                                                         Boolean?                      @default(false)
+  locked_by                                                                               String?                       @db.Uuid
+  locked_date                                                                             DateTime?                     @db.Timestamp(6)
+  expected_duration                                                                       Int?
+  actual_duration                                                                         Int?
+  lag_days                                                                                Int?
+  qc_list_id                                                                              Int?
+  original_supplier_id                                                                    String?                       @db.Uuid
+  current_supplier_id                                                                     String?                       @db.Uuid
+  internal_resource_id                                                                    String?                       @db.Uuid
+  jc_cost_code                                                                            String?                       @db.VarChar(40)
+  baseline_start                                                                          DateTime?                     @db.Timestamp(6)
+  baseline_finish                                                                         DateTime?                     @db.Timestamp(6)
+  expected_start                                                                          DateTime?                     @db.Timestamp(6)
+  expected_finish                                                                         DateTime?                     @db.Timestamp(6)
+  scheduled_start                                                                         DateTime?                     @db.Timestamp(6)
+  scheduled_finish                                                                        DateTime?                     @db.Timestamp(6)
+  actual_start                                                                            DateTime?                     @db.Timestamp(6)
+  actual_finish                                                                           DateTime?                     @db.Timestamp(6)
+  percent_complete                                                                        Decimal?                      @default(0) @db.Decimal(5, 2)
+  comments                                                                                String?
+  completed_date                                                                          DateTime?                     @db.Timestamp(6)
+  completed_by                                                                            String?                       @db.Uuid
+  is_milestone                                                                            Boolean?                      @default(false)
+  is_scheduled                                                                            Boolean?                      @default(false)
+  is_completed                                                                            Boolean?                      @default(false)
+  constraint_type                                                                         String?                       @db.VarChar(20)
+  variance_code                                                                           String?                       @db.VarChar(10)
+  po_payment_approved                                                                     Boolean?                      @default(false)
+  variance_notes                                                                          String?                       @db.VarChar(1000)
+  created_date                                                                            DateTime?                     @default(now()) @db.Timestamp(6)
+  modified_date                                                                           DateTime?                     @default(now()) @db.Timestamp(6)
+  po_items                                                                                po_items[]
+  schedule_qc_sections                                                                    schedule_qc_sections[]
+  schedule_task_activity_log                                                              schedule_task_activity_log[]
+  schedule_task_constraints_schedule_task_constraints_predecessor_task_idToschedule_tasks schedule_task_constraints[]   @relation("schedule_task_constraints_predecessor_task_idToschedule_tasks")
+  schedule_task_constraints_schedule_task_constraints_schedule_task_idToschedule_tasks    schedule_task_constraints[]   @relation("schedule_task_constraints_schedule_task_idToschedule_tasks")
+  schedule_task_history_log                                                               schedule_task_history_log[]
+  schedule_task_notifications                                                             schedule_task_notifications[]
+  schedule_task_qc_items                                                                  schedule_task_qc_items[]
+  builders                                                                                builders                      @relation(fields: [builder_id], references: [builder_id], onDelete: Cascade, onUpdate: NoAction)
+  users_schedule_tasks_completed_byTousers                                                users?                        @relation("schedule_tasks_completed_byTousers", fields: [completed_by], references: [user_id], onUpdate: NoAction)
+  suppliers_schedule_tasks_current_supplier_idTosuppliers                                 suppliers?                    @relation("schedule_tasks_current_supplier_idTosuppliers", fields: [current_supplier_id], references: [supplier_id], onUpdate: NoAction)
+  users_schedule_tasks_internal_resource_idTousers                                        users?                        @relation("schedule_tasks_internal_resource_idTousers", fields: [internal_resource_id], references: [user_id], onUpdate: NoAction)
+  jobs                                                                                    jobs?                         @relation(fields: [job_number], references: [job_number], onDelete: Cascade, onUpdate: NoAction)
+  users_schedule_tasks_locked_byTousers                                                   users?                        @relation("schedule_tasks_locked_byTousers", fields: [locked_by], references: [user_id], onUpdate: NoAction)
+  users_schedule_tasks_on_hold_byTousers                                                  users?                        @relation("schedule_tasks_on_hold_byTousers", fields: [on_hold_by], references: [user_id], onUpdate: NoAction)
+  suppliers_schedule_tasks_original_supplier_idTosuppliers                                suppliers?                    @relation("schedule_tasks_original_supplier_idTosuppliers", fields: [original_supplier_id], references: [supplier_id], onUpdate: NoAction)
+  schedule_tasks                                                                          schedule_tasks?               @relation("schedule_tasksToschedule_tasks", fields: [parent_task_id], references: [schedule_task_id], onDelete: Cascade, onUpdate: NoAction)
+  other_schedule_tasks                                                                    schedule_tasks[]              @relation("schedule_tasksToschedule_tasks")
+  schedule_master_qc_lists                                                                schedule_master_qc_lists?     @relation(fields: [qc_list_id], references: [qc_list_id], onUpdate: NoAction)
+  schedules                                                                               schedules                     @relation(fields: [schedule_id], references: [schedule_id], onDelete: Cascade, onUpdate: NoAction)
+  variance_po                                                                             variance_po[]
+
+  @@index([builder_id], map: "idx_schedule_tasks_builder_id")
+  @@index([current_supplier_id], map: "idx_schedule_tasks_current_supplier_id")
+  @@index([job_number], map: "idx_schedule_tasks_job_number")
+  @@index([original_supplier_id], map: "idx_schedule_tasks_original_supplier_id")
+  @@index([parent_task_id], map: "idx_schedule_tasks_parent_task_id")
+  @@index([schedule_id], map: "idx_schedule_tasks_schedule_id")
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model schedule_template_non_work_days {
+  non_work_day_id    Int                @id @default(autoincrement())
+  builder_id         String             @db.Uuid
+  template_id        Int
+  working_days       Int
+  created_date       DateTime?          @default(now()) @db.Timestamp(6)
+  modified_date      DateTime?          @default(now()) @db.Timestamp(6)
+  builders           builders           @relation(fields: [builder_id], references: [builder_id], onDelete: Cascade, onUpdate: NoAction)
+  schedule_templates schedule_templates @relation(fields: [template_id], references: [template_id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@unique([template_id, working_days])
+  @@index([builder_id], map: "idx_schedule_template_non_work_days_builder_id")
+  @@index([template_id], map: "idx_schedule_template_non_work_days_template_id")
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model schedule_template_task_constraints {
+  constraint_id                                                                                           Int                     @id @default(autoincrement())
+  builder_id                                                                                              String                  @db.Uuid
+  template_id                                                                                             Int
+  task_id                                                                                                 String                  @db.Uuid
+  predecessor_task_id                                                                                     String                  @db.Uuid
+  constraint_type                                                                                         String?                 @db.VarChar(20)
+  created_date                                                                                            DateTime?               @default(now()) @db.Timestamp(6)
+  modified_date                                                                                           DateTime?               @default(now()) @db.Timestamp(6)
+  builders                                                                                                builders                @relation(fields: [builder_id], references: [builder_id], onDelete: Cascade, onUpdate: NoAction)
+  schedule_template_tasks_schedule_template_task_constraints_predecessor_task_idToschedule_template_tasks schedule_template_tasks @relation("schedule_template_task_constraints_predecessor_task_idToschedule_template_tasks", fields: [predecessor_task_id], references: [schedule_master_task_id], onDelete: Cascade, onUpdate: NoAction)
+  schedule_template_tasks_schedule_template_task_constraints_task_idToschedule_template_tasks             schedule_template_tasks @relation("schedule_template_task_constraints_task_idToschedule_template_tasks", fields: [task_id], references: [schedule_master_task_id], onDelete: Cascade, onUpdate: NoAction)
+  schedule_templates                                                                                      schedule_templates      @relation(fields: [template_id], references: [template_id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@unique([template_id, task_id, predecessor_task_id], map: "schedule_template_task_constr_template_id_task_id_predecess_key")
+  @@index([builder_id], map: "idx_schedule_template_task_constraints_builder_id")
+  @@index([task_id], map: "idx_schedule_template_task_constraints_task_id")
+  @@index([template_id], map: "idx_schedule_template_task_constraints_template_id")
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model schedule_template_tasks {
+  schedule_master_task_id                                                                                            String                               @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  builder_id                                                                                                         String                               @db.Uuid
+  template_id                                                                                                        Int
+  user_supplied_code                                                                                                 String?                              @db.VarChar(20)
+  description                                                                                                        String?                              @db.VarChar(200)
+  parent_id                                                                                                          String?                              @db.Uuid
+  index_in_parent                                                                                                    Int?
+  duration                                                                                                           Int?
+  lag_days                                                                                                           Int?
+  jc_cost_code                                                                                                       String?                              @db.VarChar(40)
+  qc_list_id                                                                                                         Int?
+  sort_order                                                                                                         Int?
+  display_level                                                                                                      Int?
+  is_milestone                                                                                                       Boolean?                             @default(false)
+  is_seasonal                                                                                                        Boolean?                             @default(false)
+  construction_stage_cutoff                                                                                          Int?
+  prompt_user_to_take_photos                                                                                         Boolean?                             @default(false)
+  created_date                                                                                                       DateTime?                            @default(now()) @db.Timestamp(6)
+  modified_date                                                                                                      DateTime?                            @default(now()) @db.Timestamp(6)
+  schedule_template_task_constraints_schedule_template_task_constraints_predecessor_task_idToschedule_template_tasks schedule_template_task_constraints[] @relation("schedule_template_task_constraints_predecessor_task_idToschedule_template_tasks")
+  schedule_template_task_constraints_schedule_template_task_constraints_task_idToschedule_template_tasks             schedule_template_task_constraints[] @relation("schedule_template_task_constraints_task_idToschedule_template_tasks")
+  builders                                                                                                           builders                             @relation(fields: [builder_id], references: [builder_id], onDelete: Cascade, onUpdate: NoAction)
+  schedule_template_tasks                                                                                            schedule_template_tasks?             @relation("schedule_template_tasksToschedule_template_tasks", fields: [parent_id], references: [schedule_master_task_id], onDelete: Cascade, onUpdate: NoAction)
+  other_schedule_template_tasks                                                                                      schedule_template_tasks[]            @relation("schedule_template_tasksToschedule_template_tasks")
+  schedule_master_qc_lists                                                                                           schedule_master_qc_lists?            @relation(fields: [qc_list_id], references: [qc_list_id], onUpdate: NoAction)
+  schedule_templates                                                                                                 schedule_templates                   @relation(fields: [template_id], references: [template_id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@index([builder_id], map: "idx_schedule_template_tasks_builder_id")
+  @@index([parent_id], map: "idx_schedule_template_tasks_parent_id")
+  @@index([template_id], map: "idx_schedule_template_tasks_template_id")
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model schedule_templates {
+  template_id                                                                            Int                                  @id @default(autoincrement())
+  builder_id                                                                             String                               @db.Uuid
+  region_id                                                                              String                               @db.Uuid
+  description                                                                            String?                              @db.VarChar(200)
+  inactive                                                                               Boolean?                             @default(false)
+  working_days                                                                           Int?
+  calendar_days                                                                          Int?
+  start_task_id                                                                          String?                              @db.Uuid
+  finish_task_id                                                                         String?                              @db.Uuid
+  dead_days_calculation_value                                                            Int?
+  rental_dead_days_calculation_value                                                     Int?
+  default_task_id_sort_order                                                             Int?
+  created_date                                                                           DateTime?                            @default(now()) @db.Timestamp(6)
+  modified_date                                                                          DateTime?                            @default(now()) @db.Timestamp(6)
+  schedule_template_non_work_days                                                        schedule_template_non_work_days[]
+  schedule_template_task_constraints                                                     schedule_template_task_constraints[]
+  schedule_template_tasks                                                                schedule_template_tasks[]
+  builders                                                                               builders                             @relation(fields: [builder_id], references: [builder_id], onDelete: Cascade, onUpdate: NoAction)
+  schedule_master_task_list_schedule_templates_finish_task_idToschedule_master_task_list schedule_master_task_list?           @relation("schedule_templates_finish_task_idToschedule_master_task_list", fields: [finish_task_id], references: [schedule_master_task_id], onUpdate: NoAction)
+  regions                                                                                regions                              @relation(fields: [region_id], references: [region_id], onDelete: Cascade, onUpdate: NoAction)
+  schedule_master_task_list_schedule_templates_start_task_idToschedule_master_task_list  schedule_master_task_list?           @relation("schedule_templates_start_task_idToschedule_master_task_list", fields: [start_task_id], references: [schedule_master_task_id], onUpdate: NoAction)
+  schedules                                                                              schedules[]
+
+  @@index([builder_id], map: "idx_schedule_templates_builder_id")
+  @@index([region_id], map: "idx_schedule_templates_region_id")
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model schedules {
+  schedule_id                       String             @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  builder_id                        String             @db.Uuid
+  region_id                         String?            @db.Uuid
+  job_number                        String?            @db.VarChar(50)
+  description                       String?            @db.VarChar(200)
+  unit_number                       String?            @db.VarChar(20)
+  quote_contract_id                 String?            @db.Uuid
+  inventory_home_id                 String?            @db.Uuid
+  template_id                       Int
+  baseline_start                    DateTime?          @db.Timestamp(6)
+  baseline_finish                   DateTime?          @db.Timestamp(6)
+  expected_start                    DateTime?          @db.Timestamp(6)
+  expected_finish                   DateTime?          @db.Timestamp(6)
+  scheduled_start                   DateTime?          @db.Timestamp(6)
+  scheduled_finish                  DateTime?          @db.Timestamp(6)
+  actual_start                      DateTime?          @db.Timestamp(6)
+  actual_finish                     DateTime?          @db.Timestamp(6)
+  on_hold                           Boolean?           @default(false)
+  on_hold_date                      DateTime?          @db.Timestamp(6)
+  on_hold_by                        String?            @db.Uuid
+  closed                            Boolean?           @default(false)
+  inactive                          Boolean?           @default(false)
+  created_by                        String?            @db.Uuid
+  created_date                      DateTime?          @default(now()) @db.Timestamp(6)
+  modified_date                     DateTime?          @default(now()) @db.Timestamp(6)
+  schedule_tasks                    schedule_tasks[]
+  builders                          builders           @relation(fields: [builder_id], references: [builder_id], onDelete: Cascade, onUpdate: NoAction)
+  users_schedules_created_byTousers users?             @relation("schedules_created_byTousers", fields: [created_by], references: [user_id], onUpdate: NoAction)
+  inventory_homes                   inventory_homes?   @relation(fields: [inventory_home_id], references: [inventory_home_id], onUpdate: NoAction)
+  jobs                              jobs?              @relation(fields: [job_number], references: [job_number], onDelete: Cascade, onUpdate: NoAction)
+  users_schedules_on_hold_byTousers users?             @relation("schedules_on_hold_byTousers", fields: [on_hold_by], references: [user_id], onUpdate: NoAction)
+  quote_contracts                   quote_contracts?   @relation(fields: [quote_contract_id], references: [quote_contract_id], onUpdate: NoAction)
+  regions                           regions?           @relation(fields: [region_id], references: [region_id], onUpdate: NoAction)
+  schedule_templates                schedule_templates @relation(fields: [template_id], references: [template_id], onDelete: NoAction, onUpdate: NoAction)
+  variance_po                       variance_po[]
+
+  @@index([builder_id], map: "idx_schedules_builder_id")
+  @@index([job_number], map: "idx_schedules_job_number")
+  @@index([region_id], map: "idx_schedules_region_id")
+  @@index([template_id], map: "idx_schedules_template_id")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model scheduling_non_working_days {
+  row_sequence     Int       @id @default(autoincrement())
+  builder_id       String    @db.Uuid
+  region_id        String    @db.Uuid
+  non_working_date DateTime? @db.Timestamp(6)
+  recurring_month  Int?
+  recurring_day    Int?
+  is_working_day   Boolean?  @default(false)
+  job_number       String?   @db.VarChar(40)
+  created_date     DateTime? @default(now()) @db.Timestamp(6)
+  modified_date    DateTime? @default(now()) @db.Timestamp(6)
+  builders         builders  @relation(fields: [builder_id], references: [builder_id], onDelete: Cascade, onUpdate: NoAction)
+  regions          regions   @relation(fields: [region_id], references: [region_id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@index([builder_id], map: "idx_scheduling_non_working_days_builder_id")
+  @@index([non_working_date], map: "idx_scheduling_non_working_days_non_working_date")
+  @@index([region_id], map: "idx_scheduling_non_working_days_region_id")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model scheduling_working_days {
+  working_day_id Int       @id @default(autoincrement())
+  builder_id     String    @db.Uuid
+  region_id      String    @db.Uuid
+  day_of_week    Int
+  created_date   DateTime? @default(now()) @db.Timestamp(6)
+  modified_date  DateTime? @default(now()) @db.Timestamp(6)
+  builders       builders  @relation(fields: [builder_id], references: [builder_id], onDelete: Cascade, onUpdate: NoAction)
+  regions        regions   @relation(fields: [region_id], references: [region_id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@unique([region_id, day_of_week])
+  @@index([builder_id], map: "idx_scheduling_working_days_builder_id")
+  @@index([region_id], map: "idx_scheduling_working_days_region_id")
+}

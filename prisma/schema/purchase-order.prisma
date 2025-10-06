@@ -1,0 +1,557 @@
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model po_correspondence {
+  correspondence_id    Int                      @id @default(autoincrement())
+  builder_id           String                   @db.Uuid
+  po_master_id         String                   @db.Uuid
+  builder_supplier_id  String?                  @db.Uuid
+  supplier_contact_id  String?                  @db.Uuid
+  builders_user_id     String?                  @db.Uuid
+  date_logged          DateTime?                @default(now()) @db.Timestamp(6)
+  sequence             BigInt                   @default(autoincrement())
+  comments             String?
+  response_to_sequence BigInt                   @default(0)
+  document_id          String?                  @db.Uuid
+  ip_address           String?                  @db.VarChar(20)
+  geo_location         Unsupported("geometry")?
+  created_date         DateTime?                @default(now()) @db.Timestamp(6)
+  modified_date        DateTime?                @default(now()) @db.Timestamp(6)
+  builders             builders                 @relation(fields: [builder_id], references: [builder_id], onDelete: Cascade, onUpdate: NoAction)
+  suppliers            suppliers?               @relation(fields: [builder_supplier_id], references: [supplier_id], onUpdate: NoAction)
+  users                users?                   @relation(fields: [builders_user_id], references: [user_id], onUpdate: NoAction)
+  po_master            po_master                @relation(fields: [po_master_id], references: [po_master_id], onDelete: Cascade, onUpdate: NoAction)
+  supplier_contacts    supplier_contacts?       @relation(fields: [supplier_contact_id], references: [supplier_contact_id], onUpdate: NoAction)
+
+  @@unique([po_master_id, sequence])
+  @@index([builder_id], map: "idx_po_correspondence_builder_id")
+  @@index([builder_supplier_id], map: "idx_po_correspondence_builder_supplier_id")
+  @@index([po_master_id], map: "idx_po_correspondence_po_master_id")
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model po_group {
+  po_group_id                       Int       @id @default(autoincrement())
+  builder_id                        String    @db.Uuid
+  region_id                         String    @db.Uuid
+  po_group                          String    @db.VarChar(40)
+  description                       String?   @db.VarChar(200)
+  notes                             String?
+  jc_cost_code                      String?   @db.VarChar(40)
+  jc_cost_type                      String?   @db.VarChar(40)
+  forecast_percent_1                Decimal?  @db.Decimal(9, 2)
+  forecast_percent_2                Decimal?  @db.Decimal(9, 2)
+  forecast_percent_3                Decimal?  @db.Decimal(9, 2)
+  forecast_percent_4                Decimal?  @db.Decimal(9, 2)
+  forecast_percent_5                Decimal?  @db.Decimal(9, 2)
+  forecast_percent_6                Decimal?  @db.Decimal(9, 2)
+  forecast_percent_7                Decimal?  @db.Decimal(9, 2)
+  forecast_percent_8                Decimal?  @db.Decimal(9, 2)
+  forecast_percent_9                Decimal?  @db.Decimal(9, 2)
+  forecast_percent_10               Decimal?  @db.Decimal(9, 2)
+  forecast_percent_11               Decimal?  @db.Decimal(9, 2)
+  forecast_percent_12               Decimal?  @db.Decimal(9, 2)
+  compounding_forecasts             Boolean?  @default(false)
+  standard_text                     String?   @db.VarChar(2000)
+  po_release_group                  String?   @db.VarChar(20)
+  hide_qty                          Boolean?  @default(false)
+  hide_price                        Boolean?  @default(false)
+  total_only                        Boolean?  @default(false)
+  po_report_format                  String?   @db.VarChar(250)
+  payment_term                      Int?
+  fob                               String?   @db.VarChar(50)
+  ship_via                          String?   @db.VarChar(50)
+  terms                             String?
+  retainage_percent                 Decimal?  @db.Decimal(9, 2)
+  po_type                           String?   @db.VarChar(20)
+  pay_point_1_percent               Decimal?  @db.Decimal(9, 2)
+  pay_point_2_percent               Decimal?  @db.Decimal(9, 2)
+  pay_point_3_percent               Decimal?  @db.Decimal(9, 2)
+  pay_point_4_percent               Decimal?  @db.Decimal(9, 2)
+  pay_point_5_percent               Decimal?  @db.Decimal(9, 2)
+  pay_point_1_sched_task            Int?
+  pay_point_2_sched_task            Int?
+  pay_point_3_sched_task            Int?
+  pay_point_4_sched_task            Int?
+  pay_point_5_sched_task            Int?
+  requires_payment_approval         Boolean?  @default(false)
+  mpo                               Boolean?  @default(false)
+  use_in_scheduling                 Boolean?  @default(false)
+  require_lien_release              Boolean?  @default(false)
+  schedule_master_task_id           String?   @db.Uuid
+  master_task_id_for_release        String?   @db.Uuid
+  is_deleted                        Boolean?  @default(false)
+  created_by                        String?   @db.Uuid
+  created_date                      DateTime? @default(now()) @db.Timestamp(6)
+  modified_by                       String?   @db.Uuid
+  modified_date                     DateTime? @default(now()) @db.Timestamp(6)
+  builders                          builders  @relation(fields: [builder_id], references: [builder_id], onDelete: Cascade, onUpdate: NoAction)
+  users_po_group_created_byTousers  users?    @relation("po_group_created_byTousers", fields: [created_by], references: [user_id], onUpdate: NoAction)
+  users_po_group_modified_byTousers users?    @relation("po_group_modified_byTousers", fields: [modified_by], references: [user_id], onUpdate: NoAction)
+  regions                           regions   @relation(fields: [region_id], references: [region_id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@unique([region_id, po_group])
+  @@index([builder_id], map: "idx_po_group_builder_id")
+  @@index([po_group], map: "idx_po_group_po_group")
+  @@index([region_id], map: "idx_po_group_region_id")
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model po_items {
+  po_items_id               String               @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  builder_id                String               @db.Uuid
+  po_master_id              String               @db.Uuid
+  region_id                 String               @db.Uuid
+  po_number                 String               @db.VarChar(50)
+  po_item_seq               BigInt               @unique @default(autoincrement())
+  line_number               Int?
+  line_description          String?              @db.VarChar(200)
+  description               String?              @db.VarChar(200)
+  comments                  String?
+  mpo_qty                   Decimal?             @db.Decimal(14, 4)
+  order_qty                 Decimal?             @db.Decimal(14, 4)
+  order_uom                 String?              @db.VarChar(20)
+  approved_co_qty           Decimal?             @db.Decimal(14, 4)
+  takeoff_qty               Decimal?             @db.Decimal(14, 4)
+  takeoff_uom               String?              @db.VarChar(50)
+  unit_cost                 Decimal?             @db.Decimal(14, 4)
+  pretax_total_cost         Decimal?             @db.Decimal(14, 2)
+  approved_co_pretax_total  Decimal?             @db.Decimal(14, 2)
+  tax_group                 String?              @db.VarChar(50)
+  jc_tax                    Decimal?             @db.Decimal(12, 2)
+  jc_tax_approved_co        Decimal?             @db.Decimal(12, 2)
+  jc_tax_rate               Decimal?             @db.Decimal(7, 2)
+  njc_tax                   Decimal?             @db.Decimal(12, 2)
+  njc_tax_approved_co       Decimal?             @db.Decimal(12, 2)
+  njc_tax_rate              Decimal?             @db.Decimal(7, 2)
+  dont_print                Boolean?             @default(false)
+  job_number                String?              @db.VarChar(50)
+  unit_number               String?              @db.VarChar(50)
+  jc_extra                  String?              @db.VarChar(50)
+  jc_cost_code              String?              @db.VarChar(50)
+  jc_cost_type              String?              @db.VarChar(50)
+  est_item_id               BigInt
+  gen_batch                 Int?
+  sort_order                Int?
+  part_number               String?              @db.VarChar(50)
+  variance_jc_cost_type     String?              @db.VarChar(50)
+  variance_pretax_total     Decimal?             @db.Decimal(14, 2)
+  variance_jc_tax           Decimal?             @db.Decimal(12, 2)
+  variance_njc_tax          Decimal?             @db.Decimal(12, 2)
+  variance_line_number      Int?
+  external_id               String?              @db.VarChar(50)
+  po_index                  String               @db.VarChar(40)
+  approved_for_payment_date DateTime?            @db.Timestamp(6)
+  approved_for_payment_by   String?              @db.Uuid
+  pay_point_number          Int?
+  home_selection_id         String?              @db.Uuid
+  inventory_home_id         String?              @db.Uuid
+  quote_contract_id         String?              @db.Uuid
+  created_date              DateTime?            @default(now()) @db.Timestamp(6)
+  child_item_list_id        String?              @db.Uuid
+  child_item_id             String?              @db.Uuid
+  child_item_rate           Decimal?             @db.Decimal(14, 4)
+  sub_child_list_id         String?              @db.Uuid
+  sub_child_item_id         String?              @db.Uuid
+  sub_child_item_rate       Decimal?             @db.Decimal(14, 4)
+  estimating_db_item_id     String?              @db.Uuid
+  schedule_task_id          String?              @db.Uuid
+  co_adjusted_rate          Decimal?             @db.Decimal(14, 4)
+  co_adjusted_pretax_total  Decimal?             @db.Decimal(14, 2)
+  co_adjusted_jc_tax        Decimal?             @db.Decimal(12, 2)
+  co_adjusted_njc_tax       Decimal?             @db.Decimal(12, 2)
+  warranty_deficiency_id    Int?
+  sage_intacct_item         String?              @db.VarChar(20)
+  modified_date             DateTime?            @default(now()) @db.Timestamp(6)
+  users                     users?               @relation(fields: [approved_for_payment_by], references: [user_id], onUpdate: NoAction)
+  builders                  builders             @relation(fields: [builder_id], references: [builder_id], onDelete: Cascade, onUpdate: NoAction)
+  estimating_db_items       estimating_db_items? @relation(fields: [estimating_db_item_id], references: [estimating_db_item_id], onUpdate: NoAction)
+  inventory_homes           inventory_homes?     @relation(fields: [inventory_home_id], references: [inventory_home_id], onUpdate: NoAction)
+  po_master                 po_master            @relation(fields: [po_master_id], references: [po_master_id], onDelete: Cascade, onUpdate: NoAction)
+  quote_contracts           quote_contracts?     @relation(fields: [quote_contract_id], references: [quote_contract_id], onUpdate: NoAction)
+  regions                   regions              @relation(fields: [region_id], references: [region_id], onDelete: Cascade, onUpdate: NoAction)
+  schedule_tasks            schedule_tasks?      @relation(fields: [schedule_task_id], references: [schedule_task_id], onUpdate: NoAction)
+  po_items_co               po_items_co[]
+
+  @@index([builder_id], map: "idx_po_items_builder_id")
+  @@index([job_number], map: "idx_po_items_job_number")
+  @@index([po_index], map: "idx_po_items_po_index")
+  @@index([po_master_id], map: "idx_po_items_po_master_id")
+  @@index([po_number], map: "idx_po_items_po_number")
+  @@index([region_id], map: "idx_po_items_region_id")
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model po_items_co {
+  po_items_co_id             String               @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  builder_id                 String               @db.Uuid
+  po_master_co_id            String               @db.Uuid
+  po_items_id                String               @db.Uuid
+  po_item_co_seq             BigInt               @unique @default(autoincrement())
+  line_number                Int?
+  line_description           String?              @db.VarChar(200)
+  description                String?              @db.VarChar(200)
+  comments                   String?
+  mpo_qty                    Decimal?             @db.Decimal(14, 4)
+  order_qty                  Decimal?             @db.Decimal(14, 4)
+  order_uom                  String?              @db.VarChar(20)
+  rate                       Decimal?             @db.Decimal(14, 4)
+  pretax                     Decimal?             @db.Decimal(14, 2)
+  approved_co_pretax         Decimal?             @db.Decimal(14, 2)
+  tax_group                  String?              @db.VarChar(40)
+  jc_tax                     Decimal?             @db.Decimal(12, 2)
+  jc_tax_approved_co         Decimal?             @db.Decimal(12, 2)
+  jc_tax_rate                Decimal?             @db.Decimal(12, 2)
+  njc_tax                    Decimal?             @db.Decimal(12, 2)
+  njc_tax_approved_co        Decimal?             @db.Decimal(12, 2)
+  njc_tax_rate               Decimal?             @db.Decimal(7, 2)
+  dont_print                 Boolean?             @default(false)
+  job_number                 String?              @db.VarChar(50)
+  unit_number                String?              @db.VarChar(20)
+  jc_extra                   String?              @db.VarChar(20)
+  jc_cost_code               String?              @db.VarChar(40)
+  jc_cost_type               String?              @db.VarChar(40)
+  estimating_db_item_id      String?              @db.Uuid
+  est_item_id                BigInt
+  gen_batch                  Int?
+  sort_order                 Int?
+  part_number                String?              @db.VarChar(50)
+  variance_jc_cost_type      String?              @db.VarChar(40)
+  variance_pretax            Decimal?             @db.Decimal(14, 2)
+  variance_jc_tax            Decimal?             @db.Decimal(12, 2)
+  variance_njc_tax           Decimal?             @db.Decimal(12, 2)
+  variance_line_number       Int?
+  external_id                String?              @db.VarChar(50)
+  po_index                   String               @db.VarChar(40)
+  approved_for_payment_date  DateTime?            @db.Timestamp(6)
+  approved_for_payment_by    String?              @db.Uuid
+  pay_point_number           Int?
+  home_selection_id          String?              @db.Uuid
+  inventory_home_id          String?              @db.Uuid
+  quote_contract_id          String?              @db.Uuid
+  created_date               DateTime?            @default(now()) @db.Timestamp(6)
+  child_item_list_id         String?              @db.Uuid
+  child_item_id              String?              @db.Uuid
+  sub_child_list_id          String?              @db.Uuid
+  sub_child_item_id          String?              @db.Uuid
+  sub_child_item_description String?              @db.VarChar(200)
+  child_item_rate            Decimal?             @db.Decimal(14, 4)
+  sub_child_item_rate        Decimal?             @db.Decimal(14, 4)
+  sage_intacct_item          String?              @db.VarChar(20)
+  modified_date              DateTime?            @default(now()) @db.Timestamp(6)
+  users                      users?               @relation(fields: [approved_for_payment_by], references: [user_id], onUpdate: NoAction)
+  builders                   builders             @relation(fields: [builder_id], references: [builder_id], onDelete: Cascade, onUpdate: NoAction)
+  estimating_db_items        estimating_db_items? @relation(fields: [estimating_db_item_id], references: [estimating_db_item_id], onUpdate: NoAction)
+  inventory_homes            inventory_homes?     @relation(fields: [inventory_home_id], references: [inventory_home_id], onUpdate: NoAction)
+  po_items                   po_items             @relation(fields: [po_items_id], references: [po_items_id], onDelete: Cascade, onUpdate: NoAction)
+  po_master_co               po_master_co         @relation(fields: [po_master_co_id], references: [po_master_co_id], onDelete: Cascade, onUpdate: NoAction)
+  quote_contracts            quote_contracts?     @relation(fields: [quote_contract_id], references: [quote_contract_id], onUpdate: NoAction)
+
+  @@index([builder_id], map: "idx_po_items_co_builder_id")
+  @@index([po_index], map: "idx_po_items_co_po_index")
+  @@index([po_items_id], map: "idx_po_items_co_po_items_id")
+  @@index([po_master_co_id], map: "idx_po_items_co_po_master_co_id")
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model po_master {
+  po_master_id                                             String                        @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  builder_id                                               String                        @db.Uuid
+  region_id                                                String                        @db.Uuid
+  po_number                                                String                        @db.VarChar(40)
+  po_date                                                  DateTime?                     @default(now()) @db.Timestamptz(6)
+  po_index                                                 String                        @db.VarChar(40)
+  description                                              String?                       @db.VarChar(500)
+  job_number                                               String?                       @db.VarChar(50)
+  unit_number                                              String?                       @db.VarChar(50)
+  warranty_job                                             String?                       @db.VarChar(50)
+  supplier                                                 String?                       @db.VarChar(50)
+  builder_supplier_id                                      String                        @db.Uuid
+  notes                                                    String?
+  hide_qty                                                 Boolean?                      @default(false)
+  hide_price                                               Boolean?                      @default(false)
+  total_only                                               Boolean?                      @default(false)
+  post_to_accounting_batch                                 Int?
+  post_to_accounting_date                                  DateTime?                     @db.Timestamptz(6)
+  cancelled                                                Boolean?                      @default(false)
+  cancellation_sent                                        Boolean?                      @default(false)
+  cancelled_by                                             String?                       @db.Uuid
+  cancelled_date                                           DateTime?                     @db.Timestamptz(6)
+  cancelled_notes                                          String?                       @db.VarChar(500)
+  supplier_cancel_acknowledged_date                        DateTime?                     @db.Timestamptz(6)
+  supplier_cancel_acknowledged_user                        String?                       @db.Uuid
+  supplier_cancel_ip_address                               String?                       @db.VarChar(20)
+  delivery_method                                          String?                       @db.VarChar(5)
+  delivery_date                                            DateTime?                     @db.Timestamptz(6)
+  delivery_recipient                                       String?                       @db.VarChar(50)
+  delivery_address                                         String?                       @db.VarChar(500)
+  re_delivery_method                                       String?                       @db.VarChar(5)
+  re_delivery_recipient                                    String?                       @db.VarChar(50)
+  re_delivery_date                                         DateTime?                     @db.Timestamptz(6)
+  re_delivery_address                                      String?                       @db.VarChar(500)
+  due_date                                                 DateTime?                     @db.Timestamptz(6)
+  ship_via                                                 String?                       @db.VarChar(50)
+  fob                                                      String?                       @db.VarChar(50)
+  discount                                                 Decimal?                      @db.Decimal(12, 2)
+  terms                                                    String?                       @db.VarChar(500)
+  ordered_by                                               String?                       @db.Uuid
+  completed_date                                           DateTime?                     @db.Timestamptz(6)
+  approved_for_payment_by                                  String?                       @db.Uuid
+  approved_for_payment_date                                DateTime?                     @db.Timestamptz(6)
+  next_invoice_seq                                         Int?
+  is_purch_variance_po                                     Boolean?                      @default(false)
+  sched_start_date                                         DateTime?                     @db.Timestamptz(6)
+  sched_finish_date                                        DateTime?                     @db.Timestamptz(6)
+  retainage_percent                                        Decimal?                      @db.Decimal(7, 2)
+  include_documents                                        Boolean?                      @default(false)
+  viewed_by_supplier                                       Boolean?                      @default(false)
+  viewed_by_date                                           DateTime?                     @db.Timestamptz(6)
+  viewed_by_supplier_user_id                               String?                       @db.Uuid
+  is_scheduling_vpo                                        Boolean?                      @default(false)
+  summarized                                               Boolean?                      @default(false)
+  supplier_released_to_date                                DateTime?                     @db.Timestamptz(6)
+  supplier_acknowledged_date                               DateTime?                     @db.Timestamptz(6)
+  supplier_acknowledged_user                               String?                       @db.Uuid
+  supplier_acknowledge_ip_address                          String?                       @db.VarChar(20)
+  supplier_work_complete_date                              DateTime?                     @db.Timestamptz(6)
+  supplier_invoice_number                                  String?                       @db.VarChar(40)
+  supplier_invoice_date                                    DateTime?                     @db.Timestamptz(6)
+  status                                                   String?                       @default("Pending") @db.VarChar(20)
+  pay_point1_schedule_task_id                              String?                       @db.Uuid
+  pay_point2_schedule_task_id                              String?                       @db.Uuid
+  pay_point3_schedule_task_id                              String?                       @db.Uuid
+  pay_point4_schedule_task_id                              String?                       @db.Uuid
+  pay_point5_schedule_task_id                              String?                       @db.Uuid
+  pay_point1_approved_date                                 DateTime?                     @db.Timestamptz(6)
+  pay_point2_approved_date                                 DateTime?                     @db.Timestamptz(6)
+  pay_point3_approved_date                                 DateTime?                     @db.Timestamptz(6)
+  pay_point4_approved_date                                 DateTime?                     @db.Timestamptz(6)
+  pay_point5_approved_date                                 DateTime?                     @db.Timestamptz(6)
+  date_sent_to_scheduling                                  DateTime?                     @db.Timestamptz(6)
+  pay_point1_approved_by                                   String?                       @db.Uuid
+  pay_point2_approved_by                                   String?                       @db.Uuid
+  pay_point3_approved_by                                   String?                       @db.Uuid
+  pay_point4_approved_by                                   String?                       @db.Uuid
+  pay_point5_approved_by                                   String?                       @db.Uuid
+  scheduling_assigned_supplier_id                          String?                       @db.Uuid
+  is_tbd                                                   Boolean?                      @default(false)
+  is_mpo                                                   Boolean?                      @default(false)
+  vpo_type                                                 String?                       @db.VarChar(10)
+  vpo_suffix                                               String?                       @db.VarChar(10)
+  mpo_received                                             Boolean?                      @default(false)
+  mpo_received_date                                        DateTime?                     @db.Timestamptz(6)
+  intacct_jc_tax_line_id                                   Int?
+  intacct_jc_tax_line_number                               Int?
+  intacct_njc_tax_line_id                                  Int?
+  intacct_njc_tax_line_number                              Int?
+  vpo_doc_number                                           String?                       @db.VarChar(40)
+  intacct_transaction_type                                 String?                       @db.VarChar(20)
+  comments                                                 String?
+  is_variance                                              Boolean?                      @default(false)
+  po_gen_batch                                             Int?
+  po_icon_type                                             String?                       @default("") @db.VarChar(2)
+  last_co                                                  Int?
+  variance_po_id                                           String?                       @db.Uuid
+  wc_insurance_ok                                          Boolean?                      @default(false)
+  gl_insurance_ok                                          Boolean?                      @default(false)
+  lien_waiver_reqd                                         Boolean?                      @default(false)
+  joint_check_payee_name                                   String?                       @db.VarChar(200)
+  schedule_task_id                                         String?                       @db.Uuid
+  created_by                                               String                        @db.Uuid
+  created_at                                               DateTime?                     @default(now()) @db.Timestamptz(6)
+  lien_waiver_details                                      lien_waiver_details[]
+  po_correspondence                                        po_correspondence[]
+  po_items                                                 po_items[]
+  users_po_master_approved_for_payment_byTousers           users?                        @relation("po_master_approved_for_payment_byTousers", fields: [approved_for_payment_by], references: [user_id], onDelete: NoAction, onUpdate: NoAction)
+  builders                                                 builders                      @relation(fields: [builder_id], references: [builder_id], onDelete: Cascade, onUpdate: NoAction)
+  users_po_master_cancelled_byTousers                      users?                        @relation("po_master_cancelled_byTousers", fields: [cancelled_by], references: [user_id], onDelete: NoAction, onUpdate: NoAction)
+  users_po_master_created_byTousers                        users                         @relation("po_master_created_byTousers", fields: [created_by], references: [user_id], onDelete: NoAction, onUpdate: NoAction)
+  users_po_master_ordered_byTousers                        users?                        @relation("po_master_ordered_byTousers", fields: [ordered_by], references: [user_id], onDelete: NoAction, onUpdate: NoAction)
+  users_po_master_pay_point1_approved_byTousers            users?                        @relation("po_master_pay_point1_approved_byTousers", fields: [pay_point1_approved_by], references: [user_id], onDelete: NoAction, onUpdate: NoAction)
+  users_po_master_pay_point2_approved_byTousers            users?                        @relation("po_master_pay_point2_approved_byTousers", fields: [pay_point2_approved_by], references: [user_id], onDelete: NoAction, onUpdate: NoAction)
+  users_po_master_pay_point3_approved_byTousers            users?                        @relation("po_master_pay_point3_approved_byTousers", fields: [pay_point3_approved_by], references: [user_id], onDelete: NoAction, onUpdate: NoAction)
+  users_po_master_pay_point4_approved_byTousers            users?                        @relation("po_master_pay_point4_approved_byTousers", fields: [pay_point4_approved_by], references: [user_id], onDelete: NoAction, onUpdate: NoAction)
+  users_po_master_pay_point5_approved_byTousers            users?                        @relation("po_master_pay_point5_approved_byTousers", fields: [pay_point5_approved_by], references: [user_id], onDelete: NoAction, onUpdate: NoAction)
+  regions                                                  regions                       @relation(fields: [region_id], references: [region_id], onDelete: NoAction, onUpdate: NoAction)
+  users_po_master_supplier_acknowledged_userTousers        users?                        @relation("po_master_supplier_acknowledged_userTousers", fields: [supplier_acknowledged_user], references: [user_id], onDelete: NoAction, onUpdate: NoAction)
+  users_po_master_supplier_cancel_acknowledged_userTousers users?                        @relation("po_master_supplier_cancel_acknowledged_userTousers", fields: [supplier_cancel_acknowledged_user], references: [user_id], onDelete: NoAction, onUpdate: NoAction)
+  users_po_master_viewed_by_supplier_user_idTousers        users?                        @relation("po_master_viewed_by_supplier_user_idTousers", fields: [viewed_by_supplier_user_id], references: [user_id], onDelete: NoAction, onUpdate: NoAction)
+  po_master_co                                             po_master_co[]
+  po_viewing_history                                       po_viewing_history[]
+  variance_po                                              variance_po[]
+  warranty_problem_po_indexes                              warranty_problem_po_indexes[]
+
+  @@index([builder_id], map: "idx_po_master_builder_id")
+  @@index([job_number, unit_number], map: "idx_po_master_job_unit")
+  @@index([po_number], map: "idx_po_master_po_number")
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model po_master_co {
+  po_master_co_id                                             String        @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  builder_id                                                  String        @db.Uuid
+  po_master_id                                                String        @db.Uuid
+  co_date                                                     DateTime?     @default(now()) @db.Timestamptz(6)
+  co_number                                                   Int
+  description                                                 String?       @db.VarChar(500)
+  notes                                                       String?
+  hide_qty                                                    Boolean?      @default(false)
+  hide_price                                                  Boolean?      @default(false)
+  total_only                                                  Boolean?      @default(false)
+  post_to_accounting_batch                                    Int?
+  post_to_accounting_date                                     DateTime?     @db.Timestamptz(6)
+  cancelled                                                   Boolean?      @default(false)
+  cancellation_sent                                           Boolean?      @default(false)
+  cancelled_by                                                String?       @db.Uuid
+  cancelled_date                                              DateTime?     @db.Timestamptz(6)
+  cancelled_notes                                             String?       @db.VarChar(500)
+  supplier_cancel_acknowledged_date                           DateTime?     @db.Timestamptz(6)
+  supplier_cancel_acknowledged_user                           String?       @db.Uuid
+  supplier_cancel_ip_address                                  String?       @db.VarChar(20)
+  delivery_method                                             String?       @db.VarChar(5)
+  delivery_date                                               DateTime?     @db.Timestamptz(6)
+  delivery_recipient                                          String?       @db.VarChar(50)
+  delivery_address                                            String?       @db.VarChar(500)
+  re_delivery_method                                          String?       @db.VarChar(5)
+  re_delivery_recipient                                       String?       @db.VarChar(50)
+  re_delivery_date                                            DateTime?     @db.Timestamptz(6)
+  re_delivery_address                                         String?       @db.VarChar(500)
+  due_date                                                    DateTime?     @db.Timestamptz(6)
+  ship_via                                                    String?       @db.VarChar(50)
+  fob                                                         String?       @db.VarChar(50)
+  discount                                                    Decimal?      @db.Decimal(10, 2)
+  terms                                                       String?       @db.VarChar(500)
+  ordered_by                                                  String?       @db.Uuid
+  completed_date                                              DateTime?     @db.Timestamptz(6)
+  approved_for_payment_by                                     String?       @db.Uuid
+  approved_for_payment_date                                   DateTime?     @db.Timestamptz(6)
+  next_invoice_seq                                            Int?
+  is_purch_variance_po                                        Boolean?      @default(false)
+  sched_start_date                                            DateTime?     @db.Timestamptz(6)
+  sched_finish_date                                           DateTime?     @db.Timestamptz(6)
+  retainage_percent                                           Decimal?      @db.Decimal(7, 2)
+  include_documents                                           Boolean?      @default(false)
+  viewed_by_supplier                                          Boolean?      @default(false)
+  viewed_by_date                                              DateTime?     @db.Timestamptz(6)
+  viewed_by_supplier_user_id                                  String?       @db.Uuid
+  is_scheduling_vpo                                           Boolean?      @default(false)
+  summarized                                                  Boolean?      @default(false)
+  supplier_released_to_date                                   DateTime?     @db.Timestamptz(6)
+  supplier_acknowledged_date                                  DateTime?     @db.Timestamptz(6)
+  supplier_acknowledged_user                                  String?       @db.Uuid
+  supplier_acknowledge_ip_address                             String?       @db.VarChar(20)
+  supplier_work_complete_date                                 DateTime?     @db.Timestamptz(6)
+  supplier_invoice_number                                     String?       @db.VarChar(40)
+  supplier_invoice_date                                       DateTime?     @db.Timestamptz(6)
+  status                                                      String?       @default("Pending") @db.VarChar(20)
+  pay_point1_schedule_task_id                                 String?       @db.Uuid
+  pay_point2_schedule_task_id                                 String?       @db.Uuid
+  pay_point3_schedule_task_id                                 String?       @db.Uuid
+  pay_point4_schedule_task_id                                 String?       @db.Uuid
+  pay_point5_schedule_task_id                                 String?       @db.Uuid
+  pay_point1_approved_date                                    DateTime?     @db.Timestamptz(6)
+  pay_point2_approved_date                                    DateTime?     @db.Timestamptz(6)
+  pay_point3_approved_date                                    DateTime?     @db.Timestamptz(6)
+  pay_point4_approved_date                                    DateTime?     @db.Timestamptz(6)
+  pay_point5_approved_date                                    DateTime?     @db.Timestamptz(6)
+  date_sent_to_scheduling                                     DateTime?     @db.Timestamptz(6)
+  pay_point1_approved_by                                      String?       @db.Uuid
+  pay_point2_approved_by                                      String?       @db.Uuid
+  pay_point3_approved_by                                      String?       @db.Uuid
+  pay_point4_approved_by                                      String?       @db.Uuid
+  pay_point5_approved_by                                      String?       @db.Uuid
+  epo_id                                                      String?       @db.VarChar(40)
+  scheduling_assigned_supplier                                String?       @db.VarChar(40)
+  is_tbd                                                      Boolean?      @default(false)
+  is_mpo                                                      Boolean?      @default(false)
+  vpo_type                                                    String?       @db.VarChar(10)
+  vpo_suffix                                                  String?       @db.VarChar(10)
+  mpo_received                                                Boolean?      @default(false)
+  mpo_received_date                                           DateTime?     @db.Timestamptz(6)
+  intacct_jc_tax_line_id                                      Int?
+  intacct_jc_tax_line_number                                  Int?
+  intacct_njc_tax_line_id                                     Int?
+  intacct_njc_tax_line_number                                 Int?
+  vpo_doc_number                                              String?       @db.VarChar(40)
+  intacct_transaction_type                                    String?       @db.VarChar(20)
+  comments                                                    String?
+  is_variance                                                 Boolean?      @default(false)
+  po_icon_type                                                String?       @default("") @db.VarChar(2)
+  created_by                                                  String        @db.Uuid
+  created_at                                                  DateTime?     @default(now()) @db.Timestamptz(6)
+  po_items_co                                                 po_items_co[]
+  users_po_master_co_approved_for_payment_byTousers           users?        @relation("po_master_co_approved_for_payment_byTousers", fields: [approved_for_payment_by], references: [user_id], onDelete: NoAction, onUpdate: NoAction)
+  builders                                                    builders      @relation(fields: [builder_id], references: [builder_id], onDelete: Cascade, onUpdate: NoAction)
+  users_po_master_co_cancelled_byTousers                      users?        @relation("po_master_co_cancelled_byTousers", fields: [cancelled_by], references: [user_id], onDelete: NoAction, onUpdate: NoAction)
+  users_po_master_co_created_byTousers                        users         @relation("po_master_co_created_byTousers", fields: [created_by], references: [user_id], onDelete: NoAction, onUpdate: NoAction)
+  users_po_master_co_ordered_byTousers                        users?        @relation("po_master_co_ordered_byTousers", fields: [ordered_by], references: [user_id], onDelete: NoAction, onUpdate: NoAction)
+  users_po_master_co_pay_point1_approved_byTousers            users?        @relation("po_master_co_pay_point1_approved_byTousers", fields: [pay_point1_approved_by], references: [user_id], onDelete: NoAction, onUpdate: NoAction)
+  users_po_master_co_pay_point2_approved_byTousers            users?        @relation("po_master_co_pay_point2_approved_byTousers", fields: [pay_point2_approved_by], references: [user_id], onDelete: NoAction, onUpdate: NoAction)
+  users_po_master_co_pay_point3_approved_byTousers            users?        @relation("po_master_co_pay_point3_approved_byTousers", fields: [pay_point3_approved_by], references: [user_id], onDelete: NoAction, onUpdate: NoAction)
+  users_po_master_co_pay_point4_approved_byTousers            users?        @relation("po_master_co_pay_point4_approved_byTousers", fields: [pay_point4_approved_by], references: [user_id], onDelete: NoAction, onUpdate: NoAction)
+  users_po_master_co_pay_point5_approved_byTousers            users?        @relation("po_master_co_pay_point5_approved_byTousers", fields: [pay_point5_approved_by], references: [user_id], onDelete: NoAction, onUpdate: NoAction)
+  po_master                                                   po_master     @relation(fields: [po_master_id], references: [po_master_id], onDelete: Cascade, onUpdate: NoAction)
+  users_po_master_co_supplier_acknowledged_userTousers        users?        @relation("po_master_co_supplier_acknowledged_userTousers", fields: [supplier_acknowledged_user], references: [user_id], onDelete: NoAction, onUpdate: NoAction)
+  users_po_master_co_supplier_cancel_acknowledged_userTousers users?        @relation("po_master_co_supplier_cancel_acknowledged_userTousers", fields: [supplier_cancel_acknowledged_user], references: [user_id], onDelete: NoAction, onUpdate: NoAction)
+  users_po_master_co_viewed_by_supplier_user_idTousers        users?        @relation("po_master_co_viewed_by_supplier_user_idTousers", fields: [viewed_by_supplier_user_id], references: [user_id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@index([builder_id], map: "idx_po_master_co_builder_id")
+  @@index([po_master_id], map: "idx_po_master_co_po_master_id")
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model po_sequential_numbers {
+  po_sequential_id Int       @id @default(autoincrement())
+  builder_id       String    @db.Uuid
+  tstmp            DateTime? @default(now()) @db.Timestamp(6)
+  po_number        Int       @default(autoincrement())
+  builders         builders  @relation(fields: [builder_id], references: [builder_id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@index([builder_id], map: "idx_po_sequential_numbers_builder_id")
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model po_viewing_history {
+  viewing_history_id   Int                      @id @default(autoincrement())
+  builder_id           String                   @db.Uuid
+  po_master_id         String?                  @db.Uuid
+  builder_supplier_id  String?                  @db.Uuid
+  supplier_contact_id  String?                  @db.Uuid
+  date_viewed          DateTime?                @default(now()) @db.Timestamp(6)
+  viewing_ip_address   String?                  @db.VarChar(20)
+  viewing_geo_location Unsupported("geometry")?
+  created_date         DateTime?                @default(now()) @db.Timestamp(6)
+  builders             builders                 @relation(fields: [builder_id], references: [builder_id], onDelete: Cascade, onUpdate: NoAction)
+  suppliers            suppliers?               @relation(fields: [builder_supplier_id], references: [supplier_id], onUpdate: NoAction)
+  po_master            po_master?               @relation(fields: [po_master_id], references: [po_master_id], onDelete: Cascade, onUpdate: NoAction)
+  supplier_contacts    supplier_contacts?       @relation(fields: [supplier_contact_id], references: [supplier_contact_id], onUpdate: NoAction)
+
+  @@index([builder_id], map: "idx_po_viewing_history_builder_id")
+  @@index([date_viewed], map: "idx_po_viewing_history_date_viewed")
+  @@index([po_master_id], map: "idx_po_viewing_history_po_master_id")
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model posting_batches {
+  batch_id              BigInt            @id @default(autoincrement())
+  builder_id            String            @db.Uuid
+  region_id             String            @db.Uuid
+  batch_type            String            @db.VarChar(50)
+  batch_date            DateTime?         @db.Timestamp(6)
+  created_by            String            @db.Uuid
+  posting_date          DateTime?         @db.Timestamp(6)
+  posting_status        String?           @db.VarChar(50)
+  posting_data_sent     String?
+  posting_data_response String?
+  repost_batch_id       BigInt?
+  created_date          DateTime?         @default(now()) @db.Timestamp(6)
+  modified_date         DateTime?         @default(now()) @db.Timestamp(6)
+  builders              builders          @relation(fields: [builder_id], references: [builder_id], onDelete: Cascade, onUpdate: NoAction)
+  users                 users             @relation(fields: [created_by], references: [user_id], onDelete: NoAction, onUpdate: NoAction)
+  regions               regions           @relation(fields: [region_id], references: [region_id], onDelete: Cascade, onUpdate: NoAction)
+  posting_batches       posting_batches?  @relation("posting_batchesToposting_batches", fields: [repost_batch_id], references: [batch_id], onUpdate: NoAction)
+  other_posting_batches posting_batches[] @relation("posting_batchesToposting_batches")
+
+  @@index([batch_date], map: "idx_posting_batches_batch_date")
+  @@index([batch_type], map: "idx_posting_batches_batch_type")
+  @@index([builder_id], map: "idx_posting_batches_builder_id")
+  @@index([region_id], map: "idx_posting_batches_region_id")
+}

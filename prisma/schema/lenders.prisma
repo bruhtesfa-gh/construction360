@@ -1,0 +1,108 @@
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model lender_contacts {
+  lender_contact_id                        String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  builder_id                               String    @db.Uuid
+  lender_id                                String    @db.Uuid
+  name                                     String    @db.VarChar(200)
+  address1                                 String?   @db.VarChar(50)
+  address2                                 String?   @db.VarChar(50)
+  city                                     String?   @db.VarChar(50)
+  state                                    String?   @db.VarChar(50)
+  zip                                      String?   @db.VarChar(50)
+  home_phone                               String?   @db.VarChar(50)
+  mobile_phone                             String?   @db.VarChar(50)
+  work_phone                               String?   @db.VarChar(50)
+  fax                                      String?   @db.VarChar(50)
+  email                                    String?   @db.VarChar(200)
+  inactive                                 Boolean?  @default(false)
+  created_by                               String    @db.Uuid
+  modified_by                              String    @db.Uuid
+  created_at                               DateTime? @default(now()) @db.Timestamptz(6)
+  updated_at                               DateTime? @default(now()) @db.Timestamptz(6)
+  builders                                 builders  @relation(fields: [builder_id], references: [builder_id], onDelete: Cascade, onUpdate: NoAction)
+  users_lender_contacts_created_byTousers  users     @relation("lender_contacts_created_byTousers", fields: [created_by], references: [user_id], onDelete: NoAction, onUpdate: NoAction)
+  users_lender_contacts_modified_byTousers users     @relation("lender_contacts_modified_byTousers", fields: [modified_by], references: [user_id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@unique([lender_id, name])
+  @@index([builder_id], map: "idx_lender_contacts_builder_id")
+  @@index([lender_id], map: "idx_lender_contacts_lender_id")
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model lender_loan_draw_items {
+  loan_draw_item_id          String                     @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  builder_id                 String                     @db.Uuid
+  loan_draw_template_id      String                     @db.Uuid
+  loan_draw_item             String                     @db.VarChar(50)
+  percentage                 Decimal?                   @default(0) @db.Decimal(7, 2)
+  schedule_master_task_id    String?                    @db.Uuid
+  created_at                 DateTime?                  @default(now()) @db.Timestamptz(6)
+  updated_at                 DateTime?                  @default(now()) @db.Timestamptz(6)
+  builders                   builders                   @relation(fields: [builder_id], references: [builder_id], onDelete: Cascade, onUpdate: NoAction)
+  lender_loan_draw_templates lender_loan_draw_templates @relation(fields: [loan_draw_template_id], references: [loan_draw_template_id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@unique([loan_draw_template_id, loan_draw_item])
+  @@index([builder_id], map: "idx_lender_loan_draw_items_builder_id")
+  @@index([loan_draw_template_id], map: "idx_lender_loan_draw_items_template_id")
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model lender_loan_draw_templates {
+  loan_draw_template_id   String                   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  builder_id              String                   @db.Uuid
+  lender_id               String                   @db.Uuid
+  loan_draw_template_name String?                  @db.VarChar(100)
+  effective_date          DateTime?                @db.Timestamptz(6)
+  is_inactive             Boolean?                 @default(false)
+  inactive_date           DateTime?                @db.Timestamptz(6)
+  created_at              DateTime?                @default(now()) @db.Timestamptz(6)
+  updated_at              DateTime?                @default(now()) @db.Timestamptz(6)
+  lender_loan_draw_items  lender_loan_draw_items[]
+  builders                builders                 @relation(fields: [builder_id], references: [builder_id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@unique([lender_id, loan_draw_template_id])
+  @@index([builder_id], map: "idx_lender_loan_draw_templates_builder_id")
+  @@index([lender_id], map: "idx_lender_loan_draw_templates_lender_id")
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model lenders {
+  lender_id                        String    @id(map: "lender_pkey") @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  builder_id                       String    @db.Uuid
+  region_id                        String    @db.Uuid
+  lender_name                      String    @db.VarChar(100)
+  address1                         String?   @db.VarChar(50)
+  address2                         String?   @db.VarChar(50)
+  city                             String?   @db.VarChar(50)
+  state                            String?   @db.VarChar(50)
+  zip                              String?   @db.VarChar(50)
+  home_phone                       String?   @db.VarChar(50)
+  mobile_phone                     String?   @db.VarChar(50)
+  work_phone                       String?   @db.VarChar(50)
+  fax                              String?   @db.VarChar(50)
+  email                            String?   @db.VarChar(200)
+  inactive                         Boolean?  @default(false)
+  allow_loan_draws                 Boolean?  @default(false)
+  created_by                       String    @db.Uuid
+  modified_by                      String    @db.Uuid
+  created_at                       DateTime? @default(now()) @db.Timestamptz(6)
+  updated_at                       DateTime? @default(now()) @db.Timestamptz(6)
+  lender_code                      String?   @db.VarChar(50)
+  contact_name                     String?   @db.VarChar(100)
+  contact_phone                    String?   @db.VarChar(50)
+  contact_email                    String?   @db.VarChar(200)
+  contact_fax                      String?   @db.VarChar(50)
+  country                          String?   @default("USA") @db.VarChar(50)
+  website                          String?   @db.VarChar(200)
+  notes                            String?
+  is_preferred                     Boolean?  @default(false)
+  is_active                        Boolean?  @default(true)
+  builders                         builders  @relation(fields: [builder_id], references: [builder_id], onDelete: Cascade, onUpdate: NoAction)
+  users_lenders_created_byTousers  users     @relation("lenders_created_byTousers", fields: [created_by], references: [user_id], onDelete: NoAction, onUpdate: NoAction)
+  users_lenders_modified_byTousers users     @relation("lenders_modified_byTousers", fields: [modified_by], references: [user_id], onDelete: NoAction, onUpdate: NoAction)
+  regions                          regions   @relation(fields: [region_id], references: [region_id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@unique([region_id, lender_code], map: "unique_lender_code_per_region")
+  @@index([builder_id], map: "idx_lenders_builder_id")
+  @@index([region_id], map: "idx_lenders_region_id")
+}

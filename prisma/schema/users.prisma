@@ -1,0 +1,538 @@
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model user_communities {
+  user_id       String      @db.Uuid
+  community_id  String      @db.Uuid
+  builder_id    String      @db.Uuid
+  is_default    Boolean?    @default(false)
+  assigned_date DateTime?   @default(now()) @db.Timestamp(6)
+  assigned_by   String?     @db.Uuid
+  builders      builders    @relation(fields: [builder_id], references: [builder_id], onDelete: Cascade, onUpdate: NoAction)
+  communities   communities @relation(fields: [community_id], references: [community_id], onDelete: NoAction, onUpdate: NoAction)
+  users         users       @relation(fields: [user_id], references: [user_id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@id([user_id, community_id])
+  @@index([builder_id], map: "idx_user_communities_builder_id")
+  @@index([community_id], map: "idx_user_communities_community_id")
+  @@index([user_id], map: "idx_user_communities_user_id")
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model user_default_regions {
+  user_default_region_id String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  builder_id             String    @db.Uuid
+  user_id                String    @db.Uuid
+  region_id              String    @db.Uuid
+  created_at             DateTime? @default(now()) @db.Timestamptz(6)
+  updated_at             DateTime? @default(now()) @db.Timestamptz(6)
+  builders               builders  @relation(fields: [builder_id], references: [builder_id], onDelete: Cascade, onUpdate: NoAction)
+  regions                regions   @relation(fields: [region_id], references: [region_id], onDelete: Cascade, onUpdate: NoAction)
+  users                  users     @relation(fields: [user_id], references: [user_id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@unique([builder_id, user_id])
+  @@index([builder_id], map: "idx_user_default_regions_builder_id")
+  @@index([region_id], map: "idx_user_default_regions_region_id")
+  @@index([user_id], map: "idx_user_default_regions_user_id")
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model user_divisions {
+  user_division_id String    @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  user_id          String    @db.Uuid
+  division_id      String    @db.Uuid
+  builder_id       String    @db.Uuid
+  access_level     String?   @default("FULL") @db.VarChar(50)
+  assigned_date    DateTime? @default(now()) @db.Timestamp(6)
+  assigned_by      String?   @db.Uuid
+  is_active        Boolean?  @default(true)
+  created_at       DateTime? @default(now()) @db.Timestamp(6)
+  updated_at       DateTime? @default(now()) @db.Timestamp(6)
+  builders         builders  @relation(fields: [builder_id], references: [builder_id], onDelete: Cascade, onUpdate: NoAction)
+  divisions        divisions @relation(fields: [division_id], references: [division_id], onDelete: Cascade, onUpdate: NoAction)
+  users            users     @relation(fields: [user_id], references: [user_id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@unique([user_id, division_id])
+  @@index([builder_id], map: "idx_user_divisions_builder_id")
+  @@index([division_id], map: "idx_user_divisions_division_id")
+  @@index([user_id], map: "idx_user_divisions_user_id")
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model user_groups {
+  user_group_id String      @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  builder_id    String      @db.Uuid
+  user_id       String      @db.Uuid
+  auth_group_id String      @db.Uuid
+  created_at    DateTime?   @default(now()) @db.Timestamptz(6)
+  auth_groups   auth_groups @relation(fields: [auth_group_id], references: [auth_group_id], onDelete: Cascade, onUpdate: NoAction)
+  builders      builders    @relation(fields: [builder_id], references: [builder_id], onDelete: Cascade, onUpdate: NoAction)
+  users         users       @relation(fields: [user_id], references: [user_id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@unique([user_id, auth_group_id])
+  @@index([builder_id], map: "idx_user_groups_builder_id")
+  @@index([auth_group_id], map: "idx_user_groups_group_id")
+  @@index([user_id], map: "idx_user_groups_user_id")
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model user_permissions {
+  user_permission_id String           @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  builder_id         String           @db.Uuid
+  user_id            String           @db.Uuid
+  auth_permission_id String           @db.Uuid
+  created_at         DateTime?        @default(now()) @db.Timestamptz(6)
+  auth_permissions   auth_permissions @relation(fields: [auth_permission_id], references: [auth_permission_id], onDelete: Cascade, onUpdate: NoAction)
+  builders           builders         @relation(fields: [builder_id], references: [builder_id], onDelete: Cascade, onUpdate: NoAction)
+  users              users            @relation(fields: [user_id], references: [user_id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@unique([user_id, auth_permission_id])
+  @@index([builder_id], map: "idx_user_permissions_builder_id")
+  @@index([auth_permission_id], map: "idx_user_permissions_permission_id")
+  @@index([user_id], map: "idx_user_permissions_user_id")
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model user_profiles {
+  user_profile_id String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  builder_id      String    @db.Uuid
+  user_id         String    @db.Uuid
+  first_name      String?   @db.VarChar(150)
+  last_name       String?   @db.VarChar(150)
+  phone           String?   @db.VarChar(50)
+  mobile_phone    String?   @db.VarChar(50)
+  role_id         String?   @db.Uuid
+  is_active       Boolean?  @default(true)
+  date_joined     DateTime? @default(now()) @db.Timestamptz(6)
+  last_login      DateTime? @db.Timestamptz(6)
+  created_at      DateTime? @default(now()) @db.Timestamptz(6)
+  updated_at      DateTime? @default(now()) @db.Timestamptz(6)
+  builders        builders  @relation(fields: [builder_id], references: [builder_id], onDelete: Cascade, onUpdate: NoAction)
+  users           users     @relation(fields: [user_id], references: [user_id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@unique([builder_id, user_id])
+  @@index([builder_id], map: "idx_user_profiles_builder_id")
+  @@index([role_id], map: "idx_user_profiles_role_id")
+  @@index([user_id], map: "idx_user_profiles_user_id")
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model user_regions {
+  user_id      String    @db.Uuid
+  region_id    String    @db.Uuid
+  builder_id   String    @db.Uuid
+  date_created DateTime? @default(now()) @db.Timestamptz(6)
+  created_at   DateTime? @default(now()) @db.Timestamptz(6)
+  updated_at   DateTime? @default(now()) @db.Timestamptz(6)
+  division_id  String?   @db.Uuid
+  is_default   Boolean?  @default(false)
+  access_level String?   @default("FULL") @db.VarChar(50)
+  is_active    Boolean?  @default(true)
+  builders     builders  @relation(fields: [builder_id], references: [builder_id], onDelete: Cascade, onUpdate: NoAction)
+  regions      regions   @relation(fields: [region_id], references: [region_id], onDelete: Cascade, onUpdate: NoAction)
+  users        users     @relation(fields: [user_id], references: [user_id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@id([user_id, region_id])
+  @@index([builder_id], map: "idx_user_regions_builder_id")
+  @@index([region_id], map: "idx_user_regions_region_id")
+  @@index([user_id], map: "idx_user_regions_user_id")
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+/// This model contains an expression index which requires additional setup for migrations. Visit https://pris.ly/d/expression-indexes for more info.
+model user_role_assignments {
+  user_role_assignment_id String     @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  user_id                 String     @db.Uuid
+  role_id                 String     @db.Uuid
+  builder_id              String?    @db.Uuid
+  assigned_date           DateTime?  @default(now()) @db.Timestamp(6)
+  assigned_by             String?    @db.Uuid
+  is_active               Boolean?   @default(true)
+  created_at              DateTime?  @default(now()) @db.Timestamp(6)
+  updated_at              DateTime?  @default(now()) @db.Timestamp(6)
+  user_roles              user_roles @relation(fields: [role_id], references: [role_id], onDelete: Cascade, onUpdate: NoAction)
+  users                   users      @relation(fields: [user_id], references: [user_id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@index([builder_id], map: "idx_user_role_assignments_builder_id")
+  @@index([role_id], map: "idx_user_role_assignments_role_id")
+  @@index([user_id], map: "idx_user_role_assignments_user_id")
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model user_role_permissions {
+  role_id                      String     @id @db.Uuid
+  create_inventory_homes       Boolean?   @default(false)
+  create_custom_fields         Boolean?   @default(false)
+  create_selection_wizard      Boolean?   @default(false)
+  create_quotes_contracts      Boolean?   @default(false)
+  create_change_orders         Boolean?   @default(false)
+  approve_change_orders        Boolean?   @default(false)
+  edit_home_selections         Boolean?   @default(false)
+  unapprove_change_orders      Boolean?   @default(false)
+  approve_quotes_contracts     Boolean?   @default(false)
+  edit_actual_end_dates        Boolean?   @default(false)
+  create_schedules             Boolean?   @default(false)
+  create_schedule_templates    Boolean?   @default(false)
+  edit_estimating_item_db      Boolean?   @default(false)
+  create_estimating_assemblies Boolean?   @default(false)
+  create_floor_plans           Boolean?   @default(false)
+  create_options               Boolean?   @default(false)
+  create_jobs                  Boolean?   @default(false)
+  create_communities           Boolean?   @default(false)
+  create_divisions             Boolean?   @default(false)
+  edit_custom_sales_pricing    Boolean?   @default(false)
+  override_option_pricing      Boolean?   @default(false)
+  override_floor_plan_pricing  Boolean?   @default(false)
+  generate_pos                 Boolean?   @default(false)
+  approve_pos_for_payment      Boolean?   @default(false)
+  create_budgets               Boolean?   @default(false)
+  create_pos                   Boolean?   @default(false)
+  approve_variance_pos         Boolean?   @default(false)
+  create_variance_pos          Boolean?   @default(false)
+  post_budgets_to_accounting   Boolean?   @default(false)
+  created_at                   DateTime?  @default(now()) @db.Timestamptz(6)
+  updated_at                   DateTime?  @default(now()) @db.Timestamptz(6)
+  user_roles                   user_roles @relation(fields: [role_id], references: [role_id], onDelete: Cascade, onUpdate: NoAction)
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model user_roles {
+  role_id                   String                  @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  description               String                  @db.VarChar(200)
+  admin_role                Boolean?                @default(false)
+  sales_person_role         Boolean?                @default(false)
+  sales_manager_role        Boolean?                @default(false)
+  sales_associate_role      Boolean?                @default(false)
+  design_center_role        Boolean?                @default(false)
+  estimating_role           Boolean?                @default(false)
+  purchasing_role           Boolean?                @default(false)
+  accounting_role           Boolean?                @default(false)
+  site_superintendent_role  Boolean?                @default(false)
+  warranty_tech_role        Boolean?                @default(false)
+  warranty_admin_role       Boolean?                @default(false)
+  third_party_external_role Boolean?                @default(false)
+  date_created              DateTime?               @default(now()) @db.Timestamptz(6)
+  created_at                DateTime?               @default(now()) @db.Timestamptz(6)
+  updated_at                DateTime?               @default(now()) @db.Timestamptz(6)
+  system_admin_role         Boolean?                @default(false)
+  system_support_role       Boolean?                @default(false)
+  user_role_assignments     user_role_assignments[]
+  user_role_permissions     user_role_permissions?
+}
+
+model user_sessions {
+  session_id        String    @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  user_id           String    @db.Uuid
+  active_builder_id String?   @db.Uuid
+  session_token     String?   @unique @db.VarChar(500)
+  created_at        DateTime? @default(now()) @db.Timestamp(6)
+  updated_at        DateTime? @default(now()) @db.Timestamp(6)
+  expires_at        DateTime? @db.Timestamp(6)
+  is_active         Boolean?  @default(true)
+  builders          builders? @relation(fields: [active_builder_id], references: [builder_id], onDelete: Cascade, onUpdate: NoAction)
+  users             users     @relation(fields: [user_id], references: [user_id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@index([user_id, is_active], map: "idx_user_sessions_active")
+  @@index([session_token], map: "idx_user_sessions_token")
+  @@index([user_id], map: "idx_user_sessions_user_id")
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model users {
+  user_id                                                                                          String                                   @id(map: "user_pkey") @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  builder_id                                                                                       String?                                  @db.Uuid
+  user_login_id                                                                                    String                                   @unique(map: "user_user_login_id_key") @db.VarChar(50)
+  password_hash                                                                                    String?                                  @db.VarChar(200)
+  first_name                                                                                       String?                                  @db.VarChar(50)
+  middle_name                                                                                      String?                                  @db.VarChar(50)
+  last_name                                                                                        String?                                  @db.VarChar(50)
+  email_address                                                                                    String?                                  @db.VarChar(100)
+  phone                                                                                            String?                                  @db.VarChar(20)
+  role_id                                                                                          String                                   @db.Uuid
+  po_approval_limit                                                                                Decimal?                                 @db.Decimal(9, 2)
+  ap_invoice_entry_limit                                                                           Decimal?                                 @db.Decimal(9, 2)
+  ap_variance_limit                                                                                Decimal?                                 @db.Decimal(9, 2)
+  ap_invoice_approval_limit                                                                        Decimal?                                 @db.Decimal(9, 2)
+  ap_approval_routing_user_id                                                                      String?                                  @db.Uuid
+  vpo_approval_limit                                                                               Decimal?                                 @db.Decimal(9, 2)
+  vpo_approval_routing_user_id                                                                     String?                                  @db.Uuid
+  sales_approval_routing_user_id                                                                   String?                                  @db.Uuid
+  sales_associate_user_id                                                                          String?                                  @db.Uuid
+  inactive                                                                                         Boolean?                                 @default(false)
+  inactive_date                                                                                    DateTime?                                @db.Timestamp(6)
+  salt                                                                                             String?                                  @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  hire_date                                                                                        DateTime?                                @db.Timestamp(6)
+  termination_date                                                                                 DateTime?                                @db.Timestamp(6)
+  notes                                                                                            String?
+  inactive_by                                                                                      String?                                  @db.Uuid
+  default_region_id                                                                                String?                                  @db.Uuid
+  profile_image                                                                                    String?                                  @db.VarChar(200)
+  created_at                                                                                       DateTime?                                @default(now()) @db.Timestamp(6)
+  updated_at                                                                                       DateTime?                                @default(now()) @db.Timestamp(6)
+  default_grid_page_size                                                                           Int?                                     @default(50)
+  accounting_ap_payments_accounting_ap_payments_created_byTousers                                  accounting_ap_payments[]                 @relation("accounting_ap_payments_created_byTousers")
+  accounting_ap_payments_accounting_ap_payments_modified_byTousers                                 accounting_ap_payments[]                 @relation("accounting_ap_payments_modified_byTousers")
+  accounting_databases_accounting_databases_created_byTousers                                      accounting_databases[]                   @relation("accounting_databases_created_byTousers")
+  accounting_databases_accounting_databases_modified_byTousers                                     accounting_databases[]                   @relation("accounting_databases_modified_byTousers")
+  accounting_gl_accounts_accounting_gl_accounts_created_byTousers                                  accounting_gl_accounts[]                 @relation("accounting_gl_accounts_created_byTousers")
+  accounting_gl_accounts_accounting_gl_accounts_modified_byTousers                                 accounting_gl_accounts[]                 @relation("accounting_gl_accounts_modified_byTousers")
+  accounting_systems_accounting_systems_created_byTousers                                          accounting_systems[]                     @relation("accounting_systems_created_byTousers")
+  accounting_systems_accounting_systems_modified_byTousers                                         accounting_systems[]                     @relation("accounting_systems_modified_byTousers")
+  ap_invoice_items_ap_invoice_items_created_byTousers                                              ap_invoice_items[]                       @relation("ap_invoice_items_created_byTousers")
+  ap_invoice_items_ap_invoice_items_modified_byTousers                                             ap_invoice_items[]                       @relation("ap_invoice_items_modified_byTousers")
+  ap_invoices_ap_invoices_created_byTousers                                                        ap_invoices[]                            @relation("ap_invoices_created_byTousers")
+  ap_invoices_ap_invoices_modified_byTousers                                                       ap_invoices[]                            @relation("ap_invoices_modified_byTousers")
+  assembly_sales_pricing_assembly_sales_pricing_created_byTousers                                  assembly_sales_pricing[]                 @relation("assembly_sales_pricing_created_byTousers")
+  assembly_sales_pricing_assembly_sales_pricing_deleted_byTousers                                  assembly_sales_pricing[]                 @relation("assembly_sales_pricing_deleted_byTousers")
+  assembly_sales_pricing_assembly_sales_pricing_modified_byTousers                                 assembly_sales_pricing[]                 @relation("assembly_sales_pricing_modified_byTousers")
+  assembly_sales_pricing_assembly_sales_pricing_published_byTousers                                assembly_sales_pricing[]                 @relation("assembly_sales_pricing_published_byTousers")
+  claim_template_items_claim_template_items_created_byTousers                                      claim_template_items[]                   @relation("claim_template_items_created_byTousers")
+  claim_template_items_claim_template_items_modified_byTousers                                     claim_template_items[]                   @relation("claim_template_items_modified_byTousers")
+  claim_templates_claim_templates_created_byTousers                                                claim_templates[]                        @relation("claim_templates_created_byTousers")
+  claim_templates_claim_templates_modified_byTousers                                               claim_templates[]                        @relation("claim_templates_modified_byTousers")
+  community_phase_community_phase_estimator_idTousers                                              community_phase[]                        @relation("community_phase_estimator_idTousers")
+  community_phase_community_phase_sales_manager_idTousers                                          community_phase[]                        @relation("community_phase_sales_manager_idTousers")
+  community_phase_community_phase_site_superintendent_idTousers                                    community_phase[]                        @relation("community_phase_site_superintendent_idTousers")
+  community_phase_community_phase_warranty_rep_idTousers                                           community_phase[]                        @relation("community_phase_warranty_rep_idTousers")
+  construction_stages                                                                              construction_stages[]
+  customer_shopping_cart_customer_shopping_cart_created_byTousers                                  customer_shopping_cart[]                 @relation("customer_shopping_cart_created_byTousers")
+  customer_shopping_cart_customer_shopping_cart_modified_byTousers                                 customer_shopping_cart[]                 @relation("customer_shopping_cart_modified_byTousers")
+  digital_signature_roles_digital_signature_roles_created_byTousers                                digital_signature_roles[]                @relation("digital_signature_roles_created_byTousers")
+  digital_signature_roles_digital_signature_roles_modified_byTousers                               digital_signature_roles[]                @relation("digital_signature_roles_modified_byTousers")
+  document_repository_document_repository_created_byTousers                                        document_repository[]                    @relation("document_repository_created_byTousers")
+  document_repository_document_repository_modified_byTousers                                       document_repository[]                    @relation("document_repository_modified_byTousers")
+  document_repository_document_repository_uploaded_byTousers                                       document_repository[]                    @relation("document_repository_uploaded_byTousers")
+  documents_and_attachments_documents_and_attachments_created_byTousers                            documents_and_attachments[]              @relation("documents_and_attachments_created_byTousers")
+  documents_and_attachments_documents_and_attachments_modified_byTousers                           documents_and_attachments[]              @relation("documents_and_attachments_modified_byTousers")
+  documents_and_attachments_documents_and_attachments_uploaded_byTousers                           documents_and_attachments[]              @relation("documents_and_attachments_uploaded_byTousers")
+  docusign_documents_docusign_documents_created_byTousers                                          docusign_documents[]                     @relation("docusign_documents_created_byTousers")
+  docusign_documents_docusign_documents_modified_byTousers                                         docusign_documents[]                     @relation("docusign_documents_modified_byTousers")
+  docusign_envelope_tabs_docusign_envelope_tabs_created_byTousers                                  docusign_envelope_tabs[]                 @relation("docusign_envelope_tabs_created_byTousers")
+  docusign_envelope_tabs_docusign_envelope_tabs_modified_byTousers                                 docusign_envelope_tabs[]                 @relation("docusign_envelope_tabs_modified_byTousers")
+  docusign_envelopes_docusign_envelopes_created_byTousers                                          docusign_envelopes[]                     @relation("docusign_envelopes_created_byTousers")
+  docusign_envelopes_docusign_envelopes_modified_byTousers                                         docusign_envelopes[]                     @relation("docusign_envelopes_modified_byTousers")
+  docusign_oauth2_docusign_oauth2_created_byTousers                                                docusign_oauth2[]                        @relation("docusign_oauth2_created_byTousers")
+  docusign_oauth2_docusign_oauth2_modified_byTousers                                               docusign_oauth2[]                        @relation("docusign_oauth2_modified_byTousers")
+  docusign_recipient_event_log_docusign_recipient_event_log_created_byTousers                      docusign_recipient_event_log[]           @relation("docusign_recipient_event_log_created_byTousers")
+  docusign_recipient_event_log_docusign_recipient_event_log_modified_byTousers                     docusign_recipient_event_log[]           @relation("docusign_recipient_event_log_modified_byTousers")
+  docusign_recipient_status_docusign_recipient_status_created_byTousers                            docusign_recipient_status[]              @relation("docusign_recipient_status_created_byTousers")
+  docusign_recipient_status_docusign_recipient_status_modified_byTousers                           docusign_recipient_status[]              @relation("docusign_recipient_status_modified_byTousers")
+  docusign_role_tabs_docusign_role_tabs_created_byTousers                                          docusign_role_tabs[]                     @relation("docusign_role_tabs_created_byTousers")
+  docusign_role_tabs_docusign_role_tabs_modified_byTousers                                         docusign_role_tabs[]                     @relation("docusign_role_tabs_modified_byTousers")
+  elevations_elevations_created_byTousers                                                          elevations[]                             @relation("elevations_created_byTousers")
+  elevations_elevations_deleted_byTousers                                                          elevations[]                             @relation("elevations_deleted_byTousers")
+  elevations_elevations_modified_byTousers                                                         elevations[]                             @relation("elevations_modified_byTousers")
+  estimating_db_groups_estimating_db_groups_created_byTousers                                      estimating_db_groups[]                   @relation("estimating_db_groups_created_byTousers")
+  estimating_db_groups_estimating_db_groups_deleted_byTousers                                      estimating_db_groups[]                   @relation("estimating_db_groups_deleted_byTousers")
+  estimating_db_groups_estimating_db_groups_modified_byTousers                                     estimating_db_groups[]                   @relation("estimating_db_groups_modified_byTousers")
+  field_label_templates_field_label_templates_created_byTousers                                    field_label_templates[]                  @relation("field_label_templates_created_byTousers")
+  field_label_templates_field_label_templates_modified_byTousers                                   field_label_templates[]                  @relation("field_label_templates_modified_byTousers")
+  field_labels_field_labels_created_byTousers                                                      field_labels[]                           @relation("field_labels_created_byTousers")
+  field_labels_field_labels_modified_byTousers                                                     field_labels[]                           @relation("field_labels_modified_byTousers")
+  floor_plan_master_floor_plan_master_created_byTousers                                            floor_plan_master[]                      @relation("floor_plan_master_created_byTousers")
+  floor_plan_master_floor_plan_master_modified_byTousers                                           floor_plan_master[]                      @relation("floor_plan_master_modified_byTousers")
+  floor_plan_pricing_history                                                                       floor_plan_pricing_history[]
+  home_inspection_deficiencies_home_inspection_deficiencies_assigned_toTousers                     home_inspection_deficiencies[]           @relation("home_inspection_deficiencies_assigned_toTousers")
+  home_inspection_deficiencies_home_inspection_deficiencies_created_byTousers                      home_inspection_deficiencies[]           @relation("home_inspection_deficiencies_created_byTousers")
+  home_inspection_deficiencies_home_inspection_deficiencies_modified_byTousers                     home_inspection_deficiencies[]           @relation("home_inspection_deficiencies_modified_byTousers")
+  home_inspection_deficiencies_images_home_inspection_deficiencies_images_created_byTousers        home_inspection_deficiencies_images[]    @relation("home_inspection_deficiencies_images_created_byTousers")
+  home_inspection_deficiencies_images_home_inspection_deficiencies_images_modified_byTousers       home_inspection_deficiencies_images[]    @relation("home_inspection_deficiencies_images_modified_byTousers")
+  home_inspection_deficiencies_images_home_inspection_deficiencies_images_uploaded_byTousers       home_inspection_deficiencies_images[]    @relation("home_inspection_deficiencies_images_uploaded_byTousers")
+  home_inspection_items_home_inspection_items_created_byTousers                                    home_inspection_items[]                  @relation("home_inspection_items_created_byTousers")
+  home_inspection_items_home_inspection_items_modified_byTousers                                   home_inspection_items[]                  @relation("home_inspection_items_modified_byTousers")
+  home_inspections_home_inspections_created_byTousers                                              home_inspections[]                       @relation("home_inspections_created_byTousers")
+  home_inspections_home_inspections_modified_byTousers                                             home_inspections[]                       @relation("home_inspections_modified_byTousers")
+  home_selection_sheet_response_home_selection_sheet_response_approved_byTousers                   home_selection_sheet_response[]          @relation("home_selection_sheet_response_approved_byTousers")
+  home_selection_sheet_response_home_selection_sheet_response_created_byTousers                    home_selection_sheet_response[]          @relation("home_selection_sheet_response_created_byTousers")
+  home_selection_sheet_response_home_selection_sheet_response_modified_byTousers                   home_selection_sheet_response[]          @relation("home_selection_sheet_response_modified_byTousers")
+  home_selections_home_selections_created_byTousers                                                home_selections[]                        @relation("home_selections_created_byTousers")
+  home_selections_home_selections_deleted_byTousers                                                home_selections[]                        @relation("home_selections_deleted_byTousers")
+  home_selections_home_selections_deposit_posted_byTousers                                         home_selections[]                        @relation("home_selections_deposit_posted_byTousers")
+  home_selections_home_selections_locked_by_estimating_user_idTousers                              home_selections[]                        @relation("home_selections_locked_by_estimating_user_idTousers")
+  home_selections_home_selections_modified_byTousers                                               home_selections[]                        @relation("home_selections_modified_byTousers")
+  inspection_checklist_items_inspection_checklist_items_created_byTousers                          inspection_checklist_items[]             @relation("inspection_checklist_items_created_byTousers")
+  inspection_checklist_items_inspection_checklist_items_modified_byTousers                         inspection_checklist_items[]             @relation("inspection_checklist_items_modified_byTousers")
+  inspection_checklists_inspection_checklists_created_byTousers                                    inspection_checklists[]                  @relation("inspection_checklists_created_byTousers")
+  inspection_checklists_inspection_checklists_modified_byTousers                                   inspection_checklists[]                  @relation("inspection_checklists_modified_byTousers")
+  inspection_deficiency_pick_lists_inspection_deficiency_pick_lists_created_byTousers              inspection_deficiency_pick_lists[]       @relation("inspection_deficiency_pick_lists_created_byTousers")
+  inspection_deficiency_pick_lists_inspection_deficiency_pick_lists_modified_byTousers             inspection_deficiency_pick_lists[]       @relation("inspection_deficiency_pick_lists_modified_byTousers")
+  inspection_quality_grades_inspection_quality_grades_created_byTousers                            inspection_quality_grades[]              @relation("inspection_quality_grades_created_byTousers")
+  inspection_quality_grades_inspection_quality_grades_modified_byTousers                           inspection_quality_grades[]              @relation("inspection_quality_grades_modified_byTousers")
+  inventory_home_co_master_inventory_home_co_master_created_byTousers                              inventory_home_co_master[]               @relation("inventory_home_co_master_created_byTousers")
+  inventory_home_co_master_inventory_home_co_master_final_approval_byTousers                       inventory_home_co_master[]               @relation("inventory_home_co_master_final_approval_byTousers")
+  inventory_home_co_master_inventory_home_co_master_final_approval_rescinded_byTousers             inventory_home_co_master[]               @relation("inventory_home_co_master_final_approval_rescinded_byTousers")
+  inventory_home_co_master_inventory_home_co_master_modified_byTousers                             inventory_home_co_master[]               @relation("inventory_home_co_master_modified_byTousers")
+  inventory_homes_inventory_homes_created_byTousers                                                inventory_homes[]                        @relation("inventory_homes_created_byTousers")
+  inventory_homes_inventory_homes_design_center_sales_person_idTousers                             inventory_homes[]                        @relation("inventory_homes_design_center_sales_person_idTousers")
+  inventory_homes_inventory_homes_estimator_idTousers                                              inventory_homes[]                        @relation("inventory_homes_estimator_idTousers")
+  inventory_homes_inventory_homes_modified_byTousers                                               inventory_homes[]                        @relation("inventory_homes_modified_byTousers")
+  inventory_homes_inventory_homes_project_manager_idTousers                                        inventory_homes[]                        @relation("inventory_homes_project_manager_idTousers")
+  inventory_homes_inventory_homes_sales_person_idTousers                                           inventory_homes[]                        @relation("inventory_homes_sales_person_idTousers")
+  job_estimate_items_job_estimate_items_created_byTousers                                          job_estimate_items[]                     @relation("job_estimate_items_created_byTousers")
+  job_estimate_items_job_estimate_items_deleted_byTousers                                          job_estimate_items[]                     @relation("job_estimate_items_deleted_byTousers")
+  job_estimate_items_job_estimate_items_modified_byTousers                                         job_estimate_items[]                     @relation("job_estimate_items_modified_byTousers")
+  job_purchase_order_index_job_purchase_order_index_created_byTousers                              job_purchase_order_index[]               @relation("job_purchase_order_index_created_byTousers")
+  job_purchase_order_index_job_purchase_order_index_modified_byTousers                             job_purchase_order_index[]               @relation("job_purchase_order_index_modified_byTousers")
+  job_unit_numbers_job_unit_numbers_estimator_idTousers                                            job_unit_numbers[]                       @relation("job_unit_numbers_estimator_idTousers")
+  job_unit_numbers_job_unit_numbers_project_manager_idTousers                                      job_unit_numbers[]                       @relation("job_unit_numbers_project_manager_idTousers")
+  job_unit_numbers_job_unit_numbers_site_superintendent_idTousers                                  job_unit_numbers[]                       @relation("job_unit_numbers_site_superintendent_idTousers")
+  job_unit_numbers_job_unit_numbers_warranty_rep_idTousers                                         job_unit_numbers[]                       @relation("job_unit_numbers_warranty_rep_idTousers")
+  job_unit_numbers_job_unit_numbers_warranty_service_rep_idTousers                                 job_unit_numbers[]                       @relation("job_unit_numbers_warranty_service_rep_idTousers")
+  lender_contacts_lender_contacts_created_byTousers                                                lender_contacts[]                        @relation("lender_contacts_created_byTousers")
+  lender_contacts_lender_contacts_modified_byTousers                                               lender_contacts[]                        @relation("lender_contacts_modified_byTousers")
+  lenders_lenders_created_byTousers                                                                lenders[]                                @relation("lenders_created_byTousers")
+  lenders_lenders_modified_byTousers                                                               lenders[]                                @relation("lenders_modified_byTousers")
+  lien_templates_lien_templates_created_byTousers                                                  lien_templates[]                         @relation("lien_templates_created_byTousers")
+  lien_templates_lien_templates_modified_byTousers                                                 lien_templates[]                         @relation("lien_templates_modified_byTousers")
+  lien_waiver_details_lien_waiver_details_created_byTousers                                        lien_waiver_details[]                    @relation("lien_waiver_details_created_byTousers")
+  lien_waiver_details_lien_waiver_details_modified_byTousers                                       lien_waiver_details[]                    @relation("lien_waiver_details_modified_byTousers")
+  lien_waiver_master_lien_waiver_master_created_byTousers                                          lien_waiver_master[]                     @relation("lien_waiver_master_created_byTousers")
+  lien_waiver_master_lien_waiver_master_modified_byTousers                                         lien_waiver_master[]                     @relation("lien_waiver_master_modified_byTousers")
+  lot_sales_history                                                                                lot_sales_history[]
+  lots_lots_created_byTousers                                                                      lots[]                                   @relation("lots_created_byTousers")
+  lots_lots_modified_byTousers                                                                     lots[]                                   @relation("lots_modified_byTousers")
+  opportunities_opportunities_created_byTousers                                                    opportunities[]                          @relation("opportunities_created_byTousers")
+  opportunities_opportunities_design_center_person_idTousers                                       opportunities[]                          @relation("opportunities_design_center_person_idTousers")
+  opportunities_opportunities_modified_byTousers                                                   opportunities[]                          @relation("opportunities_modified_byTousers")
+  opportunities_opportunities_sales_person_idTousers                                               opportunities[]                          @relation("opportunities_sales_person_idTousers")
+  opportunity_opportunity_assigned_toTousers                                                       opportunity[]                            @relation("opportunity_assigned_toTousers")
+  opportunity_opportunity_created_byTousers                                                        opportunity[]                            @relation("opportunity_created_byTousers")
+  opportunity_opportunity_modified_byTousers                                                       opportunity[]                            @relation("opportunity_modified_byTousers")
+  opportunity_custom_fields_opportunity_custom_fields_created_byTousers                            opportunity_custom_fields[]              @relation("opportunity_custom_fields_created_byTousers")
+  opportunity_custom_fields_opportunity_custom_fields_modified_byTousers                           opportunity_custom_fields[]              @relation("opportunity_custom_fields_modified_byTousers")
+  option_package_details_option_package_details_created_byTousers                                  option_package_details[]                 @relation("option_package_details_created_byTousers")
+  option_package_details_option_package_details_modified_byTousers                                 option_package_details[]                 @relation("option_package_details_modified_byTousers")
+  option_packages_option_packages_created_byTousers                                                option_packages[]                        @relation("option_packages_created_byTousers")
+  option_packages_option_packages_modified_byTousers                                               option_packages[]                        @relation("option_packages_modified_byTousers")
+  option_rules_option_rules_created_byTousers                                                      option_rules[]                           @relation("option_rules_created_byTousers")
+  option_rules_option_rules_modified_byTousers                                                     option_rules[]                           @relation("option_rules_modified_byTousers")
+  po_correspondence                                                                                po_correspondence[]
+  po_group_po_group_created_byTousers                                                              po_group[]                               @relation("po_group_created_byTousers")
+  po_group_po_group_modified_byTousers                                                             po_group[]                               @relation("po_group_modified_byTousers")
+  po_items                                                                                         po_items[]
+  po_items_co                                                                                      po_items_co[]
+  po_master_po_master_approved_for_payment_byTousers                                               po_master[]                              @relation("po_master_approved_for_payment_byTousers")
+  po_master_po_master_cancelled_byTousers                                                          po_master[]                              @relation("po_master_cancelled_byTousers")
+  po_master_po_master_created_byTousers                                                            po_master[]                              @relation("po_master_created_byTousers")
+  po_master_po_master_ordered_byTousers                                                            po_master[]                              @relation("po_master_ordered_byTousers")
+  po_master_po_master_pay_point1_approved_byTousers                                                po_master[]                              @relation("po_master_pay_point1_approved_byTousers")
+  po_master_po_master_pay_point2_approved_byTousers                                                po_master[]                              @relation("po_master_pay_point2_approved_byTousers")
+  po_master_po_master_pay_point3_approved_byTousers                                                po_master[]                              @relation("po_master_pay_point3_approved_byTousers")
+  po_master_po_master_pay_point4_approved_byTousers                                                po_master[]                              @relation("po_master_pay_point4_approved_byTousers")
+  po_master_po_master_pay_point5_approved_byTousers                                                po_master[]                              @relation("po_master_pay_point5_approved_byTousers")
+  po_master_po_master_supplier_acknowledged_userTousers                                            po_master[]                              @relation("po_master_supplier_acknowledged_userTousers")
+  po_master_po_master_supplier_cancel_acknowledged_userTousers                                     po_master[]                              @relation("po_master_supplier_cancel_acknowledged_userTousers")
+  po_master_po_master_viewed_by_supplier_user_idTousers                                            po_master[]                              @relation("po_master_viewed_by_supplier_user_idTousers")
+  po_master_co_po_master_co_approved_for_payment_byTousers                                         po_master_co[]                           @relation("po_master_co_approved_for_payment_byTousers")
+  po_master_co_po_master_co_cancelled_byTousers                                                    po_master_co[]                           @relation("po_master_co_cancelled_byTousers")
+  po_master_co_po_master_co_created_byTousers                                                      po_master_co[]                           @relation("po_master_co_created_byTousers")
+  po_master_co_po_master_co_ordered_byTousers                                                      po_master_co[]                           @relation("po_master_co_ordered_byTousers")
+  po_master_co_po_master_co_pay_point1_approved_byTousers                                          po_master_co[]                           @relation("po_master_co_pay_point1_approved_byTousers")
+  po_master_co_po_master_co_pay_point2_approved_byTousers                                          po_master_co[]                           @relation("po_master_co_pay_point2_approved_byTousers")
+  po_master_co_po_master_co_pay_point3_approved_byTousers                                          po_master_co[]                           @relation("po_master_co_pay_point3_approved_byTousers")
+  po_master_co_po_master_co_pay_point4_approved_byTousers                                          po_master_co[]                           @relation("po_master_co_pay_point4_approved_byTousers")
+  po_master_co_po_master_co_pay_point5_approved_byTousers                                          po_master_co[]                           @relation("po_master_co_pay_point5_approved_byTousers")
+  po_master_co_po_master_co_supplier_acknowledged_userTousers                                      po_master_co[]                           @relation("po_master_co_supplier_acknowledged_userTousers")
+  po_master_co_po_master_co_supplier_cancel_acknowledged_userTousers                               po_master_co[]                           @relation("po_master_co_supplier_cancel_acknowledged_userTousers")
+  po_master_co_po_master_co_viewed_by_supplier_user_idTousers                                      po_master_co[]                           @relation("po_master_co_viewed_by_supplier_user_idTousers")
+  posting_batches                                                                                  posting_batches[]
+  quote_contract_co_master_quote_contract_co_master_approved_byTousers                             quote_contract_co_master[]               @relation("quote_contract_co_master_approved_byTousers")
+  quote_contract_co_master_quote_contract_co_master_created_byTousers                              quote_contract_co_master[]               @relation("quote_contract_co_master_created_byTousers")
+  quote_contract_co_master_quote_contract_co_master_modified_byTousers                             quote_contract_co_master[]               @relation("quote_contract_co_master_modified_byTousers")
+  quote_contract_deposits_quote_contract_deposits_created_byTousers                                quote_contract_deposits[]                @relation("quote_contract_deposits_created_byTousers")
+  quote_contract_deposits_quote_contract_deposits_modified_byTousers                               quote_contract_deposits[]                @relation("quote_contract_deposits_modified_byTousers")
+  quote_contract_deposits_quote_contract_deposits_processed_byTousers                              quote_contract_deposits[]                @relation("quote_contract_deposits_processed_byTousers")
+  quote_contract_room_sizes_quote_contract_room_sizes_created_byTousers                            quote_contract_room_sizes[]              @relation("quote_contract_room_sizes_created_byTousers")
+  quote_contract_room_sizes_quote_contract_room_sizes_modified_byTousers                           quote_contract_room_sizes[]              @relation("quote_contract_room_sizes_modified_byTousers")
+  quote_contracts_quote_contracts_created_byTousers                                                quote_contracts[]                        @relation("quote_contracts_created_byTousers")
+  quote_contracts_quote_contracts_modified_byTousers                                               quote_contracts[]                        @relation("quote_contracts_modified_byTousers")
+  quote_contracts_quote_contracts_sales_person_idTousers                                           quote_contracts[]                        @relation("quote_contracts_sales_person_idTousers")
+  quote_contracts_allowances_quote_contracts_allowances_created_byTousers                          quote_contracts_allowances[]             @relation("quote_contracts_allowances_created_byTousers")
+  quote_contracts_allowances_quote_contracts_allowances_modified_byTousers                         quote_contracts_allowances[]             @relation("quote_contracts_allowances_modified_byTousers")
+  quote_contracts_custom_fields_quote_contracts_custom_fields_created_byTousers                    quote_contracts_custom_fields[]          @relation("quote_contracts_custom_fields_created_byTousers")
+  quote_contracts_custom_fields_quote_contracts_custom_fields_modified_byTousers                   quote_contracts_custom_fields[]          @relation("quote_contracts_custom_fields_modified_byTousers")
+  real_estate_brokers_real_estate_brokers_created_byTousers                                        real_estate_brokers[]                    @relation("real_estate_brokers_created_byTousers")
+  real_estate_brokers_real_estate_brokers_modified_byTousers                                       real_estate_brokers[]                    @relation("real_estate_brokers_modified_byTousers")
+  realtors_realtors_created_byTousers                                                              realtors[]                               @relation("realtors_created_byTousers")
+  realtors_realtors_modified_byTousers                                                             realtors[]                               @relation("realtors_modified_byTousers")
+  room_master_room_master_created_byTousers                                                        room_master[]                            @relation("room_master_created_byTousers")
+  room_master_room_master_inactive_byTousers                                                       room_master[]                            @relation("room_master_inactive_byTousers")
+  room_master_room_master_modified_byTousers                                                       room_master[]                            @relation("room_master_modified_byTousers")
+  room_subcategories_room_subcategories_created_byTousers                                          room_subcategories[]                     @relation("room_subcategories_created_byTousers")
+  room_subcategories_room_subcategories_inactive_byTousers                                         room_subcategories[]                     @relation("room_subcategories_inactive_byTousers")
+  room_subcategories_room_subcategories_modified_byTousers                                         room_subcategories[]                     @relation("room_subcategories_modified_byTousers")
+  sage_intacct_departments_sage_intacct_departments_created_byTousers                              sage_intacct_departments[]               @relation("sage_intacct_departments_created_byTousers")
+  sage_intacct_departments_sage_intacct_departments_modified_byTousers                             sage_intacct_departments[]               @relation("sage_intacct_departments_modified_byTousers")
+  sage_intacct_entities_sage_intacct_entities_created_byTousers                                    sage_intacct_entities[]                  @relation("sage_intacct_entities_created_byTousers")
+  sage_intacct_entities_sage_intacct_entities_modified_byTousers                                   sage_intacct_entities[]                  @relation("sage_intacct_entities_modified_byTousers")
+  sage_intacct_locations_sage_intacct_locations_created_byTousers                                  sage_intacct_locations[]                 @relation("sage_intacct_locations_created_byTousers")
+  sage_intacct_locations_sage_intacct_locations_modified_byTousers                                 sage_intacct_locations[]                 @relation("sage_intacct_locations_modified_byTousers")
+  sales_price_sheet_details_sales_price_sheet_details_created_byTousers                            sales_price_sheet_details[]              @relation("sales_price_sheet_details_created_byTousers")
+  sales_price_sheet_details_sales_price_sheet_details_modified_byTousers                           sales_price_sheet_details[]              @relation("sales_price_sheet_details_modified_byTousers")
+  sales_price_sheet_master_sales_price_sheet_master_approved_byTousers                             sales_price_sheet_master[]               @relation("sales_price_sheet_master_approved_byTousers")
+  sales_price_sheet_master_sales_price_sheet_master_created_byTousers                              sales_price_sheet_master[]               @relation("sales_price_sheet_master_created_byTousers")
+  sales_price_sheet_master_sales_price_sheet_master_modified_byTousers                             sales_price_sheet_master[]               @relation("sales_price_sheet_master_modified_byTousers")
+  schedule_task_activity_log_schedule_task_activity_log_builder_user_idTousers                     schedule_task_activity_log[]             @relation("schedule_task_activity_log_builder_user_idTousers")
+  schedule_task_activity_log_schedule_task_activity_log_created_byTousers                          schedule_task_activity_log[]             @relation("schedule_task_activity_log_created_byTousers")
+  schedule_task_history_log_schedule_task_history_log_builder_user_idTousers                       schedule_task_history_log[]              @relation("schedule_task_history_log_builder_user_idTousers")
+  schedule_task_history_log_schedule_task_history_log_supplier_user_idTousers                      schedule_task_history_log[]              @relation("schedule_task_history_log_supplier_user_idTousers")
+  schedule_task_notifications                                                                      schedule_task_notifications[]
+  schedule_task_qc_items                                                                           schedule_task_qc_items[]
+  schedule_tasks_schedule_tasks_completed_byTousers                                                schedule_tasks[]                         @relation("schedule_tasks_completed_byTousers")
+  schedule_tasks_schedule_tasks_internal_resource_idTousers                                        schedule_tasks[]                         @relation("schedule_tasks_internal_resource_idTousers")
+  schedule_tasks_schedule_tasks_locked_byTousers                                                   schedule_tasks[]                         @relation("schedule_tasks_locked_byTousers")
+  schedule_tasks_schedule_tasks_on_hold_byTousers                                                  schedule_tasks[]                         @relation("schedule_tasks_on_hold_byTousers")
+  schedules_schedules_created_byTousers                                                            schedules[]                              @relation("schedules_created_byTousers")
+  schedules_schedules_on_hold_byTousers                                                            schedules[]                              @relation("schedules_on_hold_byTousers")
+  selection_sheet_master_selection_sheet_master_created_byTousers                                  selection_sheet_master[]                 @relation("selection_sheet_master_created_byTousers")
+  selection_sheet_master_selection_sheet_master_modified_byTousers                                 selection_sheet_master[]                 @relation("selection_sheet_master_modified_byTousers")
+  selection_sheet_page_selection_sheet_page_created_byTousers                                      selection_sheet_page[]                   @relation("selection_sheet_page_created_byTousers")
+  selection_sheet_page_selection_sheet_page_modified_byTousers                                     selection_sheet_page[]                   @relation("selection_sheet_page_modified_byTousers")
+  selection_sheet_question_selection_sheet_question_created_byTousers                              selection_sheet_question[]               @relation("selection_sheet_question_created_byTousers")
+  selection_sheet_question_selection_sheet_question_modified_byTousers                             selection_sheet_question[]               @relation("selection_sheet_question_modified_byTousers")
+  selection_sheet_response_selection_sheet_response_created_byTousers                              selection_sheet_response[]               @relation("selection_sheet_response_created_byTousers")
+  selection_sheet_response_selection_sheet_response_modified_byTousers                             selection_sheet_response[]               @relation("selection_sheet_response_modified_byTousers")
+  selection_sheet_section_selection_sheet_section_created_byTousers                                selection_sheet_section[]                @relation("selection_sheet_section_created_byTousers")
+  selection_sheet_section_selection_sheet_section_modified_byTousers                               selection_sheet_section[]                @relation("selection_sheet_section_modified_byTousers")
+  selection_sheet_sub_question1_selection_sheet_sub_question1_created_byTousers                    selection_sheet_sub_question1[]          @relation("selection_sheet_sub_question1_created_byTousers")
+  selection_sheet_sub_question1_selection_sheet_sub_question1_modified_byTousers                   selection_sheet_sub_question1[]          @relation("selection_sheet_sub_question1_modified_byTousers")
+  selection_sheet_sub_question2_selection_sheet_sub_question2_created_byTousers                    selection_sheet_sub_question2[]          @relation("selection_sheet_sub_question2_created_byTousers")
+  selection_sheet_sub_question2_selection_sheet_sub_question2_modified_byTousers                   selection_sheet_sub_question2[]          @relation("selection_sheet_sub_question2_modified_byTousers")
+  selection_sheet_sub_response1_selection_sheet_sub_response1_created_byTousers                    selection_sheet_sub_response1[]          @relation("selection_sheet_sub_response1_created_byTousers")
+  selection_sheet_sub_response1_selection_sheet_sub_response1_modified_byTousers                   selection_sheet_sub_response1[]          @relation("selection_sheet_sub_response1_modified_byTousers")
+  selection_sheet_sub_response2_selection_sheet_sub_response2_created_byTousers                    selection_sheet_sub_response2[]          @relation("selection_sheet_sub_response2_created_byTousers")
+  selection_sheet_sub_response2_selection_sheet_sub_response2_modified_byTousers                   selection_sheet_sub_response2[]          @relation("selection_sheet_sub_response2_modified_byTousers")
+  shopping_cart_selection_sheet_response_shopping_cart_selection_sheet_response_created_byTousers  shopping_cart_selection_sheet_response[] @relation("shopping_cart_selection_sheet_response_created_byTousers")
+  shopping_cart_selection_sheet_response_shopping_cart_selection_sheet_response_modified_byTousers shopping_cart_selection_sheet_response[] @relation("shopping_cart_selection_sheet_response_modified_byTousers")
+  system_user_audit                                                                                system_user_audit[]
+  ticket_attachments                                                                               ticket_attachments[]
+  ticket_comments                                                                                  ticket_comments[]
+  ticket_history                                                                                   ticket_history[]
+  tickets_tickets_assigned_toTousers                                                               tickets[]                                @relation("tickets_assigned_toTousers")
+  tickets_tickets_reported_byTousers                                                               tickets[]                                @relation("tickets_reported_byTousers")
+  user_communities                                                                                 user_communities[]
+  user_default_regions                                                                             user_default_regions[]
+  user_divisions                                                                                   user_divisions[]
+  user_groups                                                                                      user_groups[]
+  user_permissions                                                                                 user_permissions[]
+  user_profiles                                                                                    user_profiles[]
+  user_regions                                                                                     user_regions[]
+  user_role_assignments                                                                            user_role_assignments[]
+  user_sessions                                                                                    user_sessions[]
+  builders                                                                                         builders?                                @relation(fields: [builder_id], references: [builder_id], onDelete: Cascade, onUpdate: NoAction)
+  variance_po_variance_po_approved_byTousers                                                       variance_po[]                            @relation("variance_po_approved_byTousers")
+  variance_po_variance_po_created_byTousers                                                        variance_po[]                            @relation("variance_po_created_byTousers")
+  variance_po_variance_po_declined_byTousers                                                       variance_po[]                            @relation("variance_po_declined_byTousers")
+  variance_po_variance_po_purchaser_idTousers                                                      variance_po[]                            @relation("variance_po_purchaser_idTousers")
+  variance_po_variance_po_sent_to_vendor_byTousers                                                 variance_po[]                            @relation("variance_po_sent_to_vendor_byTousers")
+  warranty_problem_po_indexes_warranty_problem_po_indexes_created_byTousers                        warranty_problem_po_indexes[]            @relation("warranty_problem_po_indexes_created_byTousers")
+  warranty_problem_po_indexes_warranty_problem_po_indexes_modified_byTousers                       warranty_problem_po_indexes[]            @relation("warranty_problem_po_indexes_modified_byTousers")
+  warranty_problems_warranty_problems_assigned_toTousers                                           warranty_problems[]                      @relation("warranty_problems_assigned_toTousers")
+  warranty_problems_warranty_problems_created_byTousers                                            warranty_problems[]                      @relation("warranty_problems_created_byTousers")
+  warranty_problems_warranty_problems_modified_byTousers                                           warranty_problems[]                      @relation("warranty_problems_modified_byTousers")
+  warranty_work_orders_warranty_work_orders_created_byTousers                                      warranty_work_orders[]                   @relation("warranty_work_orders_created_byTousers")
+  warranty_work_orders_warranty_work_orders_modified_byTousers                                     warranty_work_orders[]                   @relation("warranty_work_orders_modified_byTousers")
+
+  @@index([builder_id], map: "idx_user_builder_id")
+  @@index([user_login_id], map: "idx_user_login")
+}

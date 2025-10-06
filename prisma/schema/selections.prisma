@@ -1,0 +1,244 @@
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model selection_sheet_master {
+  selection_sheet_master_id                       String                 @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  builder_id                                      String                 @db.Uuid
+  region_id                                       String?                @db.Uuid
+  community_id                                    String?                @db.Uuid
+  sheet_name                                      String                 @db.VarChar(200)
+  sheet_description                               String?
+  sheet_type                                      String?                @db.VarChar(100)
+  version_number                                  String?                @db.VarChar(20)
+  effective_date                                  DateTime?              @db.Timestamptz(6)
+  expiration_date                                 DateTime?              @db.Timestamptz(6)
+  is_template                                     Boolean?               @default(true)
+  is_active                                       Boolean?               @default(true)
+  display_order                                   Int?
+  created_by                                      String?                @db.Uuid
+  modified_by                                     String?                @db.Uuid
+  created_at                                      DateTime?              @default(now()) @db.Timestamptz(6)
+  updated_at                                      DateTime?              @default(now()) @db.Timestamptz(6)
+  builders                                        builders               @relation(fields: [builder_id], references: [builder_id], onDelete: Cascade, onUpdate: NoAction)
+  communities                                     communities?           @relation(fields: [community_id], references: [community_id], onDelete: NoAction, onUpdate: NoAction)
+  users_selection_sheet_master_created_byTousers  users?                 @relation("selection_sheet_master_created_byTousers", fields: [created_by], references: [user_id], onDelete: NoAction, onUpdate: NoAction)
+  users_selection_sheet_master_modified_byTousers users?                 @relation("selection_sheet_master_modified_byTousers", fields: [modified_by], references: [user_id], onDelete: NoAction, onUpdate: NoAction)
+  regions                                         regions?               @relation(fields: [region_id], references: [region_id], onDelete: NoAction, onUpdate: NoAction)
+  selection_sheet_page                            selection_sheet_page[]
+
+  @@index([builder_id], map: "idx_selection_sheet_master_builder_id")
+  @@index([community_id], map: "idx_selection_sheet_master_community_id")
+  @@index([region_id], map: "idx_selection_sheet_master_region_id")
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model selection_sheet_page {
+  selection_sheet_page_id                       String                    @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  builder_id                                    String                    @db.Uuid
+  selection_sheet_master_id                     String                    @db.Uuid
+  page_name                                     String                    @db.VarChar(200)
+  page_description                              String?
+  page_number                                   Int
+  page_instructions                             String?
+  is_required                                   Boolean?                  @default(true)
+  display_order                                 Int?
+  created_by                                    String?                   @db.Uuid
+  modified_by                                   String?                   @db.Uuid
+  created_at                                    DateTime?                 @default(now()) @db.Timestamptz(6)
+  updated_at                                    DateTime?                 @default(now()) @db.Timestamptz(6)
+  builders                                      builders                  @relation(fields: [builder_id], references: [builder_id], onDelete: Cascade, onUpdate: NoAction)
+  users_selection_sheet_page_created_byTousers  users?                    @relation("selection_sheet_page_created_byTousers", fields: [created_by], references: [user_id], onDelete: NoAction, onUpdate: NoAction)
+  users_selection_sheet_page_modified_byTousers users?                    @relation("selection_sheet_page_modified_byTousers", fields: [modified_by], references: [user_id], onDelete: NoAction, onUpdate: NoAction)
+  selection_sheet_master                        selection_sheet_master    @relation(fields: [selection_sheet_master_id], references: [selection_sheet_master_id], onDelete: Cascade, onUpdate: NoAction)
+  selection_sheet_section                       selection_sheet_section[]
+
+  @@index([builder_id], map: "idx_selection_sheet_page_builder_id")
+  @@index([selection_sheet_master_id], map: "idx_selection_sheet_page_master_id")
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model selection_sheet_question {
+  selection_sheet_question_id                       String                          @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  builder_id                                        String                          @db.Uuid
+  selection_sheet_section_id                        String                          @db.Uuid
+  question_text                                     String                          @db.VarChar(500)
+  question_type                                     String                          @db.VarChar(50)
+  question_code                                     String?                         @db.VarChar(100)
+  help_text                                         String?
+  placeholder_text                                  String?                         @db.VarChar(200)
+  validation_rules                                  Json?
+  available_options                                 Json?
+  default_value                                     String?                         @db.VarChar(500)
+  question_number                                   Int?
+  is_required                                       Boolean?                        @default(false)
+  is_conditional                                    Boolean?                        @default(false)
+  conditional_logic                                 Json?
+  display_order                                     Int?
+  created_by                                        String?                         @db.Uuid
+  modified_by                                       String?                         @db.Uuid
+  created_at                                        DateTime?                       @default(now()) @db.Timestamptz(6)
+  updated_at                                        DateTime?                       @default(now()) @db.Timestamptz(6)
+  home_selection_sheet_response                     home_selection_sheet_response[]
+  builders                                          builders                        @relation(fields: [builder_id], references: [builder_id], onDelete: Cascade, onUpdate: NoAction)
+  users_selection_sheet_question_created_byTousers  users?                          @relation("selection_sheet_question_created_byTousers", fields: [created_by], references: [user_id], onDelete: NoAction, onUpdate: NoAction)
+  users_selection_sheet_question_modified_byTousers users?                          @relation("selection_sheet_question_modified_byTousers", fields: [modified_by], references: [user_id], onDelete: NoAction, onUpdate: NoAction)
+  selection_sheet_section                           selection_sheet_section         @relation(fields: [selection_sheet_section_id], references: [selection_sheet_section_id], onDelete: Cascade, onUpdate: NoAction)
+  selection_sheet_response                          selection_sheet_response[]
+  selection_sheet_sub_question1                     selection_sheet_sub_question1[]
+
+  @@index([builder_id], map: "idx_selection_sheet_question_builder_id")
+  @@index([question_code], map: "idx_selection_sheet_question_code")
+  @@index([selection_sheet_section_id], map: "idx_selection_sheet_question_section_id")
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model selection_sheet_response {
+  selection_sheet_response_id                       String                          @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  builder_id                                        String                          @db.Uuid
+  selection_sheet_question_id                       String                          @db.Uuid
+  related_entity_type                               String?                         @db.VarChar(50)
+  related_entity_id                                 String?                         @db.Uuid
+  response_value                                    String?
+  response_date                                     DateTime?                       @default(now()) @db.Timestamptz(6)
+  respondent_name                                   String?                         @db.VarChar(200)
+  respondent_email                                  String?                         @db.VarChar(200)
+  is_final                                          Boolean?                        @default(false)
+  created_by                                        String?                         @db.Uuid
+  modified_by                                       String?                         @db.Uuid
+  created_at                                        DateTime?                       @default(now()) @db.Timestamptz(6)
+  updated_at                                        DateTime?                       @default(now()) @db.Timestamptz(6)
+  builders                                          builders                        @relation(fields: [builder_id], references: [builder_id], onDelete: Cascade, onUpdate: NoAction)
+  users_selection_sheet_response_created_byTousers  users?                          @relation("selection_sheet_response_created_byTousers", fields: [created_by], references: [user_id], onDelete: NoAction, onUpdate: NoAction)
+  users_selection_sheet_response_modified_byTousers users?                          @relation("selection_sheet_response_modified_byTousers", fields: [modified_by], references: [user_id], onDelete: NoAction, onUpdate: NoAction)
+  selection_sheet_question                          selection_sheet_question        @relation(fields: [selection_sheet_question_id], references: [selection_sheet_question_id], onDelete: Cascade, onUpdate: NoAction)
+  selection_sheet_sub_response1                     selection_sheet_sub_response1[]
+
+  @@index([builder_id], map: "idx_selection_sheet_response_builder_id")
+  @@index([selection_sheet_question_id], map: "idx_selection_sheet_response_question_id")
+  @@index([related_entity_type, related_entity_id], map: "idx_selection_sheet_response_related_entity")
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model selection_sheet_section {
+  selection_sheet_section_id                       String                     @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  builder_id                                       String                     @db.Uuid
+  selection_sheet_page_id                          String                     @db.Uuid
+  section_name                                     String                     @db.VarChar(200)
+  section_description                              String?
+  section_instructions                             String?
+  section_number                                   Int
+  is_required                                      Boolean?                   @default(true)
+  display_order                                    Int?
+  created_by                                       String?                    @db.Uuid
+  modified_by                                      String?                    @db.Uuid
+  created_at                                       DateTime?                  @default(now()) @db.Timestamptz(6)
+  updated_at                                       DateTime?                  @default(now()) @db.Timestamptz(6)
+  selection_sheet_question                         selection_sheet_question[]
+  builders                                         builders                   @relation(fields: [builder_id], references: [builder_id], onDelete: Cascade, onUpdate: NoAction)
+  users_selection_sheet_section_created_byTousers  users?                     @relation("selection_sheet_section_created_byTousers", fields: [created_by], references: [user_id], onDelete: NoAction, onUpdate: NoAction)
+  users_selection_sheet_section_modified_byTousers users?                     @relation("selection_sheet_section_modified_byTousers", fields: [modified_by], references: [user_id], onDelete: NoAction, onUpdate: NoAction)
+  selection_sheet_page                             selection_sheet_page       @relation(fields: [selection_sheet_page_id], references: [selection_sheet_page_id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@index([builder_id], map: "idx_selection_sheet_section_builder_id")
+  @@index([selection_sheet_page_id], map: "idx_selection_sheet_section_page_id")
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model selection_sheet_sub_question1 {
+  selection_sheet_sub_question1_id                       String                          @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  builder_id                                             String                          @db.Uuid
+  selection_sheet_question_id                            String                          @db.Uuid
+  sub_question_text                                      String                          @db.VarChar(500)
+  sub_question_type                                      String                          @db.VarChar(50)
+  sub_question_code                                      String?                         @db.VarChar(100)
+  help_text                                              String?
+  available_options                                      Json?
+  default_value                                          String?                         @db.VarChar(500)
+  is_required                                            Boolean?                        @default(false)
+  display_order                                          Int?
+  created_by                                             String?                         @db.Uuid
+  modified_by                                            String?                         @db.Uuid
+  created_at                                             DateTime?                       @default(now()) @db.Timestamptz(6)
+  updated_at                                             DateTime?                       @default(now()) @db.Timestamptz(6)
+  builders                                               builders                        @relation(fields: [builder_id], references: [builder_id], onDelete: Cascade, onUpdate: NoAction)
+  users_selection_sheet_sub_question1_created_byTousers  users?                          @relation("selection_sheet_sub_question1_created_byTousers", fields: [created_by], references: [user_id], onDelete: NoAction, onUpdate: NoAction)
+  users_selection_sheet_sub_question1_modified_byTousers users?                          @relation("selection_sheet_sub_question1_modified_byTousers", fields: [modified_by], references: [user_id], onDelete: NoAction, onUpdate: NoAction)
+  selection_sheet_question                               selection_sheet_question        @relation(fields: [selection_sheet_question_id], references: [selection_sheet_question_id], onDelete: Cascade, onUpdate: NoAction)
+  selection_sheet_sub_question2                          selection_sheet_sub_question2[]
+  selection_sheet_sub_response1                          selection_sheet_sub_response1[]
+
+  @@index([builder_id], map: "idx_selection_sheet_sub_question1_builder_id")
+  @@index([selection_sheet_question_id], map: "idx_selection_sheet_sub_question1_question_id")
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model selection_sheet_sub_question2 {
+  selection_sheet_sub_question2_id                       String                          @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  builder_id                                             String                          @db.Uuid
+  selection_sheet_sub_question1_id                       String                          @db.Uuid
+  sub_question_text                                      String                          @db.VarChar(500)
+  sub_question_type                                      String                          @db.VarChar(50)
+  sub_question_code                                      String?                         @db.VarChar(100)
+  help_text                                              String?
+  available_options                                      Json?
+  default_value                                          String?                         @db.VarChar(500)
+  is_required                                            Boolean?                        @default(false)
+  display_order                                          Int?
+  created_by                                             String?                         @db.Uuid
+  modified_by                                            String?                         @db.Uuid
+  created_at                                             DateTime?                       @default(now()) @db.Timestamptz(6)
+  updated_at                                             DateTime?                       @default(now()) @db.Timestamptz(6)
+  builders                                               builders                        @relation(fields: [builder_id], references: [builder_id], onDelete: Cascade, onUpdate: NoAction)
+  users_selection_sheet_sub_question2_created_byTousers  users?                          @relation("selection_sheet_sub_question2_created_byTousers", fields: [created_by], references: [user_id], onDelete: NoAction, onUpdate: NoAction)
+  users_selection_sheet_sub_question2_modified_byTousers users?                          @relation("selection_sheet_sub_question2_modified_byTousers", fields: [modified_by], references: [user_id], onDelete: NoAction, onUpdate: NoAction)
+  selection_sheet_sub_question1                          selection_sheet_sub_question1   @relation(fields: [selection_sheet_sub_question1_id], references: [selection_sheet_sub_question1_id], onDelete: Cascade, onUpdate: NoAction)
+  selection_sheet_sub_response2                          selection_sheet_sub_response2[]
+
+  @@index([builder_id], map: "idx_selection_sheet_sub_question2_builder_id")
+  @@index([selection_sheet_sub_question1_id], map: "idx_selection_sheet_sub_question2_sub_question1_id")
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model selection_sheet_sub_response1 {
+  selection_sheet_sub_response1_id                       String                          @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  builder_id                                             String                          @db.Uuid
+  selection_sheet_response_id                            String                          @db.Uuid
+  selection_sheet_sub_question1_id                       String                          @db.Uuid
+  response_value                                         String?
+  response_date                                          DateTime?                       @default(now()) @db.Timestamptz(6)
+  created_by                                             String?                         @db.Uuid
+  modified_by                                            String?                         @db.Uuid
+  created_at                                             DateTime?                       @default(now()) @db.Timestamptz(6)
+  updated_at                                             DateTime?                       @default(now()) @db.Timestamptz(6)
+  builders                                               builders                        @relation(fields: [builder_id], references: [builder_id], onDelete: Cascade, onUpdate: NoAction)
+  users_selection_sheet_sub_response1_created_byTousers  users?                          @relation("selection_sheet_sub_response1_created_byTousers", fields: [created_by], references: [user_id], onDelete: NoAction, onUpdate: NoAction)
+  users_selection_sheet_sub_response1_modified_byTousers users?                          @relation("selection_sheet_sub_response1_modified_byTousers", fields: [modified_by], references: [user_id], onDelete: NoAction, onUpdate: NoAction)
+  selection_sheet_response                               selection_sheet_response        @relation(fields: [selection_sheet_response_id], references: [selection_sheet_response_id], onDelete: Cascade, onUpdate: NoAction)
+  selection_sheet_sub_question1                          selection_sheet_sub_question1   @relation(fields: [selection_sheet_sub_question1_id], references: [selection_sheet_sub_question1_id], onDelete: Cascade, onUpdate: NoAction)
+  selection_sheet_sub_response2                          selection_sheet_sub_response2[]
+
+  @@index([builder_id], map: "idx_selection_sheet_sub_response1_builder_id")
+  @@index([selection_sheet_response_id], map: "idx_selection_sheet_sub_response1_response_id")
+  @@index([selection_sheet_sub_question1_id], map: "idx_selection_sheet_sub_response1_sub_question1_id")
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model selection_sheet_sub_response2 {
+  selection_sheet_sub_response2_id                       String                        @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  builder_id                                             String                        @db.Uuid
+  selection_sheet_sub_response1_id                       String                        @db.Uuid
+  selection_sheet_sub_question2_id                       String                        @db.Uuid
+  response_value                                         String?
+  response_date                                          DateTime?                     @default(now()) @db.Timestamptz(6)
+  created_by                                             String?                       @db.Uuid
+  modified_by                                            String?                       @db.Uuid
+  created_at                                             DateTime?                     @default(now()) @db.Timestamptz(6)
+  updated_at                                             DateTime?                     @default(now()) @db.Timestamptz(6)
+  builders                                               builders                      @relation(fields: [builder_id], references: [builder_id], onDelete: Cascade, onUpdate: NoAction)
+  users_selection_sheet_sub_response2_created_byTousers  users?                        @relation("selection_sheet_sub_response2_created_byTousers", fields: [created_by], references: [user_id], onDelete: NoAction, onUpdate: NoAction)
+  users_selection_sheet_sub_response2_modified_byTousers users?                        @relation("selection_sheet_sub_response2_modified_byTousers", fields: [modified_by], references: [user_id], onDelete: NoAction, onUpdate: NoAction)
+  selection_sheet_sub_question2                          selection_sheet_sub_question2 @relation(fields: [selection_sheet_sub_question2_id], references: [selection_sheet_sub_question2_id], onDelete: Cascade, onUpdate: NoAction)
+  selection_sheet_sub_response1                          selection_sheet_sub_response1 @relation(fields: [selection_sheet_sub_response1_id], references: [selection_sheet_sub_response1_id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@index([builder_id], map: "idx_selection_sheet_sub_response2_builder_id")
+  @@index([selection_sheet_sub_question2_id], map: "idx_selection_sheet_sub_response2_sub_question2_id")
+  @@index([selection_sheet_sub_response1_id], map: "idx_selection_sheet_sub_response2_sub_response1_id")
+}

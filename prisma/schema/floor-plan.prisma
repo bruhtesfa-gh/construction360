@@ -1,0 +1,160 @@
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model floor_plan_community {
+  floor_plan_community_id    String                       @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  region_id                  String                       @db.Uuid
+  community_id               String                       @db.Uuid
+  builder_id                 String                       @db.Uuid
+  community_phase_id         String?                      @db.Uuid
+  version_number             Int?
+  series                     String?                      @db.VarChar(50)
+  floor_plan_assembly_id     String?                      @db.Uuid
+  description                String?                      @db.VarChar(200)
+  comments                   String?
+  floor_plan_orientation     String?                      @db.VarChar(50)
+  num_of_beds                Decimal?                     @db.Decimal(9, 2)
+  num_of_baths               Decimal?                     @db.Decimal(9, 2)
+  num_of_garages             Decimal?                     @db.Decimal(9, 2)
+  main_floor_size            Decimal?                     @db.Decimal(9, 2)
+  lower_level_size           Decimal?                     @db.Decimal(9, 2)
+  second_level_size          Decimal?                     @db.Decimal(9, 2)
+  third_level_size           Decimal?                     @db.Decimal(9, 2)
+  garage_size                Decimal?                     @db.Decimal(9, 2)
+  total_size                 Decimal?                     @db.Decimal(9, 2)
+  inactive                   Boolean                      @default(false)
+  inactive_date              DateTime?                    @db.Timestamp(6)
+  brochure                   String?                      @db.VarChar(200)
+  selling_price              Decimal?                     @db.Decimal(12, 2)
+  cost                       Decimal?                     @db.Decimal(12, 2)
+  margin                     Decimal?                     @db.Decimal(7, 2)
+  markup                     Decimal?                     @db.Decimal(7, 2)
+  sales_price_sheet          Int?
+  style                      String?                      @db.VarChar(200)
+  is_deleted                 Boolean?                     @default(false)
+  last_price_change          DateTime?                    @db.Timestamp(6)
+  front_length               Decimal?                     @db.Decimal(9, 2)
+  back_length                Decimal?                     @db.Decimal(9, 2)
+  left_side_length           Decimal?                     @db.Decimal(9, 2)
+  right_side_length          Decimal?                     @db.Decimal(9, 2)
+  internal_notes             String?
+  schedule_template_id       String?                      @db.Uuid
+  floor_plan_code            String                       @db.VarChar(50)
+  elevation_code             String?                      @db.VarChar(50)
+  elevation_id               String?                      @db.Uuid
+  deleted_date               DateTime?                    @db.Timestamp(6)
+  deleted_by                 String?                      @db.Uuid
+  created_by                 String?                      @db.Uuid
+  modified_by                String?                      @db.Uuid
+  created_at                 DateTime?                    @default(now()) @db.Timestamp(6)
+  updated_at                 DateTime?                    @default(now()) @db.Timestamp(6)
+  floor_plan_master_id       String?                      @db.Uuid
+  floor_plan_master          floor_plan_master?           @relation(fields: [floor_plan_master_id], references: [floor_plan_master_id], onDelete: NoAction, onUpdate: NoAction, map: "floor_plan_community_master_id_fkey")
+  builders                   builders                     @relation(fields: [builder_id], references: [builder_id], onDelete: Cascade, onUpdate: NoAction, map: "floor_plans_builder_id_fkey")
+  communities                communities                  @relation(fields: [community_id], references: [community_id], onDelete: Cascade, onUpdate: NoAction, map: "floor_plans_community_id_fkey")
+  regions                    regions                      @relation(fields: [region_id], references: [region_id], onDelete: Cascade, onUpdate: NoAction, map: "floor_plans_region_id_fkey")
+  floor_plan_pricing_history floor_plan_pricing_history[]
+  homes                      homes[]
+  inventory_homes            inventory_homes[]
+  quote_contracts            quote_contracts[]
+
+  @@index([builder_id], map: "idx_floor_plan_community_builder_id")
+  @@index([floor_plan_code], map: "idx_floor_plan_community_code")
+  @@index([community_id], map: "idx_floor_plan_community_community_id")
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model floor_plan_images {
+  floor_plan_image_id       String       @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  builder_id                String       @db.Uuid
+  floor_plan_code           String       @db.VarChar(50)
+  region_id                 String       @db.Uuid
+  community_id              String?      @db.Uuid
+  description               String       @db.VarChar(200)
+  sort_order                Int?
+  image_path                String?      @db.VarChar(200)
+  image_file                String?      @db.VarChar(200)
+  storage_system_identifier String       @db.VarChar(200)
+  inactive                  Boolean?     @default(false)
+  created_at                DateTime?    @default(now()) @db.Timestamptz(6)
+  updated_at                DateTime?    @default(now()) @db.Timestamptz(6)
+  builders                  builders     @relation(fields: [builder_id], references: [builder_id], onDelete: Cascade, onUpdate: NoAction)
+  communities               communities? @relation(fields: [community_id], references: [community_id], onDelete: NoAction, onUpdate: NoAction)
+  regions                   regions      @relation(fields: [region_id], references: [region_id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@index([builder_id], map: "idx_floor_plan_images_builder_id")
+  @@index([floor_plan_code], map: "idx_floor_plan_images_floor_plan_code")
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model floor_plan_master {
+  floor_plan_master_id                       String                 @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  builder_id                                 String                 @db.Uuid
+  region_id                                  String                 @db.Uuid
+  floor_plan_code                            String                 @db.VarChar(50)
+  floor_plan_name                            String                 @db.VarChar(200)
+  description                                String?
+  square_footage                             Int?
+  bedrooms                                   Int?
+  bathrooms                                  Decimal?               @db.Decimal(3, 1)
+  garage_spaces                              Int?
+  floors                                     Int?                   @default(1)
+  architectural_style                        String?                @db.VarChar(100)
+  base_price                                 Decimal?               @db.Decimal(12, 2)
+  is_active                                  Boolean?               @default(true)
+  created_by                                 String?                @db.Uuid
+  modified_by                                String?                @db.Uuid
+  created_date                               DateTime?              @default(now()) @db.Timestamptz(6)
+  modified_date                              DateTime?              @default(now()) @db.Timestamptz(6)
+  floor_plan_community                       floor_plan_community[]
+  builders                                   builders               @relation(fields: [builder_id], references: [builder_id], onDelete: Cascade, onUpdate: NoAction)
+  users_floor_plan_master_created_byTousers  users?                 @relation("floor_plan_master_created_byTousers", fields: [created_by], references: [user_id], onDelete: NoAction, onUpdate: NoAction)
+  users_floor_plan_master_modified_byTousers users?                 @relation("floor_plan_master_modified_byTousers", fields: [modified_by], references: [user_id], onDelete: NoAction, onUpdate: NoAction)
+  regions                                    regions                @relation(fields: [region_id], references: [region_id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@unique([builder_id, region_id, floor_plan_code])
+  @@index([builder_id], map: "idx_floor_plan_master_builder_id")
+  @@index([floor_plan_code], map: "idx_floor_plan_master_code")
+  @@index([region_id], map: "idx_floor_plan_master_region_id")
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model floor_plan_pricing_history {
+  floor_plan_pricing_history_id String               @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  builder_id                    String               @db.Uuid
+  floor_plan_id                 String               @db.Uuid
+  date_changed                  DateTime?            @default(now()) @db.Timestamptz(6)
+  old_price                     Decimal?             @db.Decimal(9, 2)
+  new_price                     Decimal?             @db.Decimal(9, 2)
+  changed_by                    String?              @db.Uuid
+  created_at                    DateTime?            @default(now()) @db.Timestamptz(6)
+  builders                      builders             @relation(fields: [builder_id], references: [builder_id], onDelete: Cascade, onUpdate: NoAction)
+  users                         users?               @relation(fields: [changed_by], references: [user_id], onDelete: NoAction, onUpdate: NoAction)
+  floor_plan_community          floor_plan_community @relation(fields: [floor_plan_id], references: [floor_plan_community_id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@index([builder_id], map: "idx_floor_plan_pricing_history_builder_id")
+  @@index([date_changed], map: "idx_floor_plan_pricing_history_date")
+  @@index([floor_plan_id], map: "idx_floor_plan_pricing_history_floor_plan_id")
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model floor_plan_room_sizes {
+  floor_plan_room_size_id String      @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  builder_id              String      @db.Uuid
+  region_id               String      @db.Uuid
+  community_id            String      @db.Uuid
+  floor_plan_code         String      @db.VarChar(50)
+  room_location           String      @db.VarChar(200)
+  category_code           String      @db.VarChar(50)
+  sub_category_code       String      @db.VarChar(50)
+  unit_of_measure         String      @db.VarChar(50)
+  quantity                Decimal?    @db.Decimal(12, 4)
+  inactive                Boolean?    @default(false)
+  created_at              DateTime?   @default(now()) @db.Timestamptz(6)
+  updated_at              DateTime?   @default(now()) @db.Timestamptz(6)
+  builders                builders    @relation(fields: [builder_id], references: [builder_id], onDelete: Cascade, onUpdate: NoAction)
+  communities             communities @relation(fields: [community_id], references: [community_id], onDelete: NoAction, onUpdate: NoAction)
+  regions                 regions     @relation(fields: [region_id], references: [region_id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@unique([region_id, community_id, floor_plan_code, room_location, category_code, sub_category_code, unit_of_measure])
+  @@index([builder_id], map: "idx_floor_plan_room_sizes_builder_id")
+  @@index([floor_plan_code], map: "idx_floor_plan_room_sizes_floor_plan_code")
+}

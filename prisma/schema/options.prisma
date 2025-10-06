@@ -1,0 +1,285 @@
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model option_categories {
+  option_category_id   String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  builder_id           String    @db.Uuid
+  region_id            String    @db.Uuid
+  option_category_code String    @db.VarChar(50)
+  description          String?   @db.VarChar(100)
+  margin_percentage    Decimal?  @db.Decimal(6, 2)
+  markup_percentage    Decimal?  @default(0) @db.Decimal(6, 2)
+  round_to             Decimal?  @default(0) @db.Decimal(6, 2)
+  created_at           DateTime? @default(now()) @db.Timestamptz(6)
+  updated_at           DateTime? @default(now()) @db.Timestamptz(6)
+  builders             builders  @relation(fields: [builder_id], references: [builder_id], onDelete: Cascade, onUpdate: NoAction)
+  regions              regions   @relation(fields: [region_id], references: [region_id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@unique([region_id, option_category_code])
+  @@index([builder_id], map: "idx_option_categories_builder_id")
+  @@index([option_category_code], map: "idx_option_categories_code")
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model option_images {
+  option_image_id           String      @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  builder_id                String      @db.Uuid
+  region_id                 String      @db.Uuid
+  floor_plan_code           String      @db.VarChar(50)
+  option_code               String      @db.VarChar(50)
+  community_id              String      @db.Uuid
+  image_file                String?     @db.VarChar(200)
+  description               String      @db.VarChar(200)
+  sort_order                Int?
+  image_path                String?     @db.VarChar(200)
+  storage_system_identifier String      @db.VarChar(200)
+  inactive                  Boolean?    @default(false)
+  created_at                DateTime?   @default(now()) @db.Timestamptz(6)
+  updated_at                DateTime?   @default(now()) @db.Timestamptz(6)
+  builders                  builders    @relation(fields: [builder_id], references: [builder_id], onDelete: Cascade, onUpdate: NoAction)
+  communities               communities @relation(fields: [community_id], references: [community_id], onDelete: NoAction, onUpdate: NoAction)
+  regions                   regions     @relation(fields: [region_id], references: [region_id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@index([builder_id], map: "idx_option_images_builder_id")
+  @@index([floor_plan_code, option_code], map: "idx_option_images_codes")
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model option_package_details {
+  option_package_detail_id                        String          @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  builder_id                                      String          @db.Uuid
+  option_package_id                               String          @db.Uuid
+  floor_plan_code                                 String          @db.VarChar(50)
+  elevation_code                                  String          @db.VarChar(50)
+  series                                          String          @db.VarChar(50)
+  option_code                                     String          @db.VarChar(50)
+  is_included_option                              Boolean?        @default(false)
+  included_at_no_charge                           Boolean?        @default(false)
+  quantity                                        Decimal?        @db.Decimal(10, 4)
+  created_by                                      String          @db.Uuid
+  modified_by                                     String          @db.Uuid
+  created_at                                      DateTime?       @default(now()) @db.Timestamptz(6)
+  updated_at                                      DateTime?       @default(now()) @db.Timestamptz(6)
+  builders                                        builders        @relation(fields: [builder_id], references: [builder_id], onDelete: Cascade, onUpdate: NoAction)
+  users_option_package_details_created_byTousers  users           @relation("option_package_details_created_byTousers", fields: [created_by], references: [user_id], onDelete: NoAction, onUpdate: NoAction)
+  users_option_package_details_modified_byTousers users           @relation("option_package_details_modified_byTousers", fields: [modified_by], references: [user_id], onDelete: NoAction, onUpdate: NoAction)
+  option_packages                                 option_packages @relation(fields: [option_package_id], references: [option_package_id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@unique([option_package_id, floor_plan_code, series, elevation_code, option_code])
+  @@index([builder_id], map: "idx_option_package_details_builder_id")
+  @@index([option_package_id], map: "idx_option_package_details_package_id")
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model option_packages {
+  option_package_id                        String                   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  builder_id                               String                   @db.Uuid
+  region_id                                String                   @db.Uuid
+  community_id                             String                   @db.Uuid
+  community_phase_id                       String                   @db.Uuid
+  floor_plan_code                          String?                  @db.VarChar(50)
+  elevation_code                           String?                  @db.VarChar(50)
+  description                              String?                  @db.VarChar(500)
+  comments                                 String?
+  internal_notes                           String?
+  is_included_option                       Boolean?                 @default(false)
+  included_at_no_charge                    Boolean?                 @default(false)
+  price                                    Decimal?                 @db.Decimal(12, 4)
+  cost                                     Decimal?                 @db.Decimal(12, 4)
+  last_price_change                        DateTime?                @db.Timestamptz(6)
+  unit_of_measure                          String?                  @db.VarChar(50)
+  sales_worksheet                          Int?
+  inactive                                 Boolean?                 @default(false)
+  inactive_date                            DateTime?                @db.Timestamptz(6)
+  select_by_room                           Boolean?                 @default(false)
+  display_total_only                       Boolean?                 @default(false)
+  design_center_use_only                   Boolean?                 @default(false)
+  location                                 String?                  @db.VarChar(200)
+  construction_stage_cutoff                Int?
+  option_image_icon                        String?                  @db.VarChar(100)
+  warranty_info                            String?
+  restriction_warning                      Boolean?                 @default(false)
+  restriction_message                      String?
+  subcategory_code                         String?                  @db.VarChar(50)
+  category_code                            String?                  @db.VarChar(50)
+  created_by                               String                   @db.Uuid
+  modified_by                              String                   @db.Uuid
+  created_at                               DateTime?                @default(now()) @db.Timestamptz(6)
+  updated_at                               DateTime?                @default(now()) @db.Timestamptz(6)
+  assembly_sales_pricing                   assembly_sales_pricing[]
+  option_package_details                   option_package_details[]
+  builders                                 builders                 @relation(fields: [builder_id], references: [builder_id], onDelete: Cascade, onUpdate: NoAction)
+  communities                              communities              @relation(fields: [community_id], references: [community_id], onDelete: NoAction, onUpdate: NoAction)
+  community_phase                          community_phase          @relation(fields: [community_phase_id], references: [community_phase_id], onDelete: NoAction, onUpdate: NoAction)
+  users_option_packages_created_byTousers  users                    @relation("option_packages_created_byTousers", fields: [created_by], references: [user_id], onDelete: NoAction, onUpdate: NoAction)
+  users_option_packages_modified_byTousers users                    @relation("option_packages_modified_byTousers", fields: [modified_by], references: [user_id], onDelete: NoAction, onUpdate: NoAction)
+  regions                                  regions                  @relation(fields: [region_id], references: [region_id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@index([builder_id], map: "idx_option_packages_builder_id")
+  @@index([community_id], map: "idx_option_packages_community_id")
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model option_room_size_changes {
+  option_room_size_change_id String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  builder_id                 String    @db.Uuid
+  region_id                  String    @db.Uuid
+  floor_plan_code            String    @db.VarChar(50)
+  option_code                String    @db.VarChar(50)
+  room                       String    @db.VarChar(200)
+  category_code              String    @db.VarChar(50)
+  subcategory_code           String    @db.VarChar(50)
+  unit_of_measure            String    @db.VarChar(50)
+  quantity                   Decimal   @db.Decimal(10, 4)
+  is_inactive                Boolean?  @default(false)
+  created_at                 DateTime? @default(now()) @db.Timestamptz(6)
+  updated_at                 DateTime? @default(now()) @db.Timestamptz(6)
+  builders                   builders  @relation(fields: [builder_id], references: [builder_id], onDelete: Cascade, onUpdate: NoAction)
+  regions                    regions   @relation(fields: [region_id], references: [region_id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@unique([region_id, floor_plan_code, option_code, room, category_code, subcategory_code, unit_of_measure])
+  @@index([builder_id], map: "idx_option_room_size_changes_builder_id")
+  @@index([floor_plan_code, option_code], map: "idx_option_room_size_changes_codes")
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model option_rules {
+  option_rule_id                        String          @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  builder_id                            String          @db.Uuid
+  region_id                             String          @db.Uuid
+  community_id                          String          @db.Uuid
+  community_phase_id                    String          @db.Uuid
+  floor_plan_code                       String          @db.VarChar(50)
+  series                                String          @db.VarChar(50)
+  option_code                           String          @db.VarChar(50)
+  related_floor_plan_code               String          @db.VarChar(50)
+  related_series                        String          @db.VarChar(50)
+  related_option_code                   String          @db.VarChar(50)
+  rule_type                             String          @db.VarChar(50)
+  use_same_qty                          Boolean?        @default(false)
+  quantity                              Decimal?        @db.Decimal(10, 4)
+  is_once_only                          Boolean?        @default(false)
+  comments                              String?
+  include_at_no_charge                  Boolean?        @default(false)
+  use_same_attributes                   Boolean?        @default(false)
+  created_by                            String          @db.Uuid
+  modified_by                           String          @db.Uuid
+  created_at                            DateTime?       @default(now()) @db.Timestamptz(6)
+  updated_at                            DateTime?       @default(now()) @db.Timestamptz(6)
+  builders                              builders        @relation(fields: [builder_id], references: [builder_id], onDelete: Cascade, onUpdate: NoAction)
+  communities                           communities     @relation(fields: [community_id], references: [community_id], onDelete: NoAction, onUpdate: NoAction)
+  community_phase                       community_phase @relation(fields: [community_phase_id], references: [community_phase_id], onDelete: NoAction, onUpdate: NoAction)
+  users_option_rules_created_byTousers  users           @relation("option_rules_created_byTousers", fields: [created_by], references: [user_id], onDelete: NoAction, onUpdate: NoAction)
+  users_option_rules_modified_byTousers users           @relation("option_rules_modified_byTousers", fields: [modified_by], references: [user_id], onDelete: NoAction, onUpdate: NoAction)
+  regions                               regions         @relation(fields: [region_id], references: [region_id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@unique([region_id, community_id, community_phase_id, floor_plan_code, series, option_code, related_floor_plan_code, related_series, related_option_code])
+  @@index([builder_id], map: "idx_option_rules_builder_id")
+  @@index([option_code], map: "idx_option_rules_option_code")
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model option_subcategories {
+  option_subcategory_id   String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  builder_id              String    @db.Uuid
+  region_id               String    @db.Uuid
+  option_category_code    String    @db.VarChar(50)
+  option_subcategory_code String    @db.VarChar(50)
+  description             String?   @db.VarChar(100)
+  margin_percentage       Decimal?  @db.Decimal(6, 2)
+  markup_percentage       Decimal?  @default(0) @db.Decimal(6, 2)
+  round_to                Decimal?  @default(0) @db.Decimal(6, 2)
+  created_at              DateTime? @default(now()) @db.Timestamptz(6)
+  updated_at              DateTime? @default(now()) @db.Timestamptz(6)
+  builders                builders  @relation(fields: [builder_id], references: [builder_id], onDelete: Cascade, onUpdate: NoAction)
+  regions                 regions   @relation(fields: [region_id], references: [region_id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@unique([region_id, option_category_code, option_subcategory_code])
+  @@index([builder_id], map: "idx_option_subcategories_builder_id")
+  @@index([option_category_code, option_subcategory_code], map: "idx_option_subcategories_codes")
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model options {
+  option_id                 String            @id(map: "option_pkey") @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  region_id                 String            @db.Uuid
+  community_id              String            @db.Uuid
+  builder_id                String            @db.Uuid
+  community_phase_id        String            @db.Uuid
+  floor_plan_code           String            @db.VarChar(50)
+  elevation_code            String            @db.VarChar(50)
+  option_code               String            @db.VarChar(50)
+  series                    String            @db.VarChar(50)
+  category_code             String            @db.VarChar(50)
+  sub_category_code         String            @db.VarChar(50)
+  unit_of_measure           String?           @db.VarChar(50)
+  assembly_id               String?           @db.Uuid
+  assembly_type_id          Int?
+  description               String            @db.VarChar(500)
+  comments                  String?
+  internal_notes            String?
+  product_number            String?           @db.VarChar(100)
+  product_name              String?           @db.VarChar(100)
+  product_brand             String?           @db.VarChar(100)
+  product_manufacturer      String?           @db.VarChar(100)
+  product_style_key         String?           @db.VarChar(100)
+  product_style_name        String?           @db.VarChar(100)
+  external_option_number    String?           @db.VarChar(50)
+  is_included_option        Boolean           @default(false)
+  design_center_use_only    Boolean           @default(false)
+  price                     Decimal?          @db.Decimal(14, 4)
+  cost                      Decimal?          @db.Decimal(14, 4)
+  last_price_change         DateTime?         @db.Timestamp(6)
+  sales_price_sheet         Int?
+  inactive                  Boolean           @default(false)
+  inactive_date             DateTime?         @db.Timestamp(6)
+  color_attribute_list_id   String?           @db.Uuid
+  color                     String?           @db.VarChar(500)
+  style_attribute_list_id   String?           @db.Uuid
+  style                     String?           @db.VarChar(500)
+  finish_attribute_list_id  String?           @db.Uuid
+  finish                    String?           @db.VarChar(500)
+  other_attribute_list_id   String?           @db.Uuid
+  other                     String?           @db.VarChar(500)
+  included_at_no_charge     Boolean?
+  select_by_room            Boolean?
+  display_total_only        Boolean?
+  location                  String?
+  main_floor_size           Decimal?          @db.Decimal(9, 2)
+  lower_level_size          Decimal?          @db.Decimal(9, 2)
+  second_level_size         Decimal?          @db.Decimal(9, 2)
+  third_level_size          Decimal?          @db.Decimal(9, 2)
+  garage_size               Decimal?          @db.Decimal(9, 2)
+  room_size_adjustment      Boolean?
+  construction_stage_cutoff Int?
+  option_image_icon         String?           @db.VarChar(100)
+  warranty_info             String?
+  total_size                Decimal?          @db.Decimal(9, 2)
+  num_of_beds               Decimal?          @db.Decimal(9, 2)
+  num_of_baths              Decimal?          @db.Decimal(9, 2)
+  num_of_garages            Decimal?          @db.Decimal(6, 2)
+  restriction_warning       Boolean           @default(false)
+  restriction_message       String?
+  option_package_id         String?           @db.Uuid
+  no_commission_paid        Boolean?
+  markup_percentage         Decimal?          @db.Decimal(6, 2)
+  margin_percentage         Decimal?          @db.Decimal(6, 2)
+  round_to                  Decimal?          @db.Decimal(6, 2)
+  warranty_details          String?
+  warranty_period_in_months Int?
+  is_deleted                Boolean?          @default(false)
+  deleted_date              DateTime?         @db.Timestamp(6)
+  deleted_by                String?           @db.Uuid
+  option_type               Int?
+  created_by                String            @db.Uuid
+  modified_by               String            @db.Uuid
+  created_at                DateTime?         @default(now()) @db.Timestamp(6)
+  updated_at                DateTime?         @default(now()) @db.Timestamp(6)
+  home_selections           home_selections[]
+  builders                  builders          @relation(fields: [builder_id], references: [builder_id], onDelete: Cascade, onUpdate: NoAction)
+  communities               communities       @relation(fields: [community_id], references: [community_id], onDelete: Cascade, onUpdate: NoAction)
+  regions                   regions           @relation(fields: [region_id], references: [region_id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@unique([region_id, community_id, community_phase_id, floor_plan_code, elevation_code, option_code, series])
+  @@index([builder_id], map: "idx_option_builder_id")
+  @@index([floor_plan_code, option_code], map: "idx_options_codes")
+  @@index([community_id], map: "idx_options_community_id")
+}
