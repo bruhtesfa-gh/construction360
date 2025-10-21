@@ -4,8 +4,9 @@ import { homesApi } from './apis/homesApi';
 import { customersApi } from './apis/customersApi';
 import { communitiesApi } from './apis/communitiesApi';
 import { buildersApi } from './apis/buildersApi';
-import userReducer from './slices/userSlice';
 import { contactsApi } from './apis/contactsApi';
+import { quoteContractsApi } from './apis/quoteContractsApi';
+import userReducer from './slices/userSlice';
 
 export const store = configureStore({
   reducer: {
@@ -16,6 +17,7 @@ export const store = configureStore({
     [customersApi.reducerPath]: customersApi.reducer,
     [contactsApi.reducerPath]: contactsApi.reducer,
     [communitiesApi.reducerPath]: communitiesApi.reducer,
+    [quoteContractsApi.reducerPath]: quoteContractsApi.reducer,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware().concat(
@@ -24,7 +26,8 @@ export const store = configureStore({
       buildersApi.middleware,
       contactsApi.middleware,
       customersApi.middleware,
-      communitiesApi.middleware
+      communitiesApi.middleware,
+      quoteContractsApi.middleware,
     ),
 });
 

@@ -9,3 +9,5 @@ coverage/
 /lib/generated/prisma
 /prisma/generated
 .next
+
+/FullCircle-legacy
