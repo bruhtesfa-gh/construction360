@@ -1,0 +1,132 @@
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model opportunities {
+  opportunity_id                                     String                        @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  builder_id                                         String                        @db.Uuid
+  division_id                                        String?                       @db.Uuid
+  region_id                                          String?                       @db.Uuid
+  contact1_id                                        String?                       @db.Uuid
+  contact2_id                                        String?                       @db.Uuid
+  contact3_id                                        String?                       @db.Uuid
+  contact4_id                                        String?                       @db.Uuid
+  contact5_id                                        String?                       @db.Uuid
+  description                                        String?                       @db.VarChar(200)
+  comments                                           String?
+  rating_id                                          String?                       @db.Uuid
+  sales_person_id                                    String?                       @db.Uuid
+  external_source_id                                 String?                       @db.Uuid
+  community_id                                       String?                       @db.Uuid
+  realtor_id                                         String?                       @db.Uuid
+  lender_id                                          String?                       @db.Uuid
+  customer_id                                        String?                       @db.Uuid
+  design_center_person_id                            String?                       @db.Uuid
+  created_by_online_shopping                         Boolean?                      @default(false)
+  created_by                                         String?                       @db.Uuid
+  modified_by                                        String?                       @db.Uuid
+  created_at                                         DateTime?                     @default(now()) @db.Timestamptz(6)
+  updated_at                                         DateTime?                     @default(now()) @db.Timestamptz(6)
+  builders                                           builders                      @relation(fields: [builder_id], references: [builder_id], onDelete: Cascade, onUpdate: NoAction)
+  communities                                        communities?                  @relation(fields: [community_id], references: [community_id], onDelete: NoAction, onUpdate: NoAction)
+  contacts_opportunities_contact1_idTocontacts       contacts?                     @relation("opportunities_contact1_idTocontacts", fields: [contact1_id], references: [contact_id], onDelete: NoAction, onUpdate: NoAction)
+  contacts_opportunities_contact2_idTocontacts       contacts?                     @relation("opportunities_contact2_idTocontacts", fields: [contact2_id], references: [contact_id], onDelete: NoAction, onUpdate: NoAction)
+  contacts_opportunities_contact3_idTocontacts       contacts?                     @relation("opportunities_contact3_idTocontacts", fields: [contact3_id], references: [contact_id], onDelete: NoAction, onUpdate: NoAction)
+  contacts_opportunities_contact4_idTocontacts       contacts?                     @relation("opportunities_contact4_idTocontacts", fields: [contact4_id], references: [contact_id], onDelete: NoAction, onUpdate: NoAction)
+  contacts_opportunities_contact5_idTocontacts       contacts?                     @relation("opportunities_contact5_idTocontacts", fields: [contact5_id], references: [contact_id], onDelete: NoAction, onUpdate: NoAction)
+  users_opportunities_created_byTousers              users?                        @relation("opportunities_created_byTousers", fields: [created_by], references: [user_id], onDelete: NoAction, onUpdate: NoAction)
+  users_opportunities_design_center_person_idTousers users?                        @relation("opportunities_design_center_person_idTousers", fields: [design_center_person_id], references: [user_id], onDelete: NoAction, onUpdate: NoAction)
+  users_opportunities_modified_byTousers             users?                        @relation("opportunities_modified_byTousers", fields: [modified_by], references: [user_id], onDelete: NoAction, onUpdate: NoAction)
+  regions                                            regions?                      @relation(fields: [region_id], references: [region_id], onDelete: NoAction, onUpdate: NoAction)
+  users_opportunities_sales_person_idTousers         users?                        @relation("opportunities_sales_person_idTousers", fields: [sales_person_id], references: [user_id], onDelete: NoAction, onUpdate: NoAction)
+  opportunities_custom_fields                        opportunities_custom_fields[]
+  quote_contracts                                    quote_contracts[]
+
+  @@index([builder_id], map: "idx_opportunities_builder_id")
+  @@index([community_id], map: "idx_opportunities_community_id")
+  @@index([contact1_id], map: "idx_opportunities_contacts")
+  @@index([sales_person_id], map: "idx_opportunities_sales_person")
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model opportunities_custom_fields {
+  opportunity_custom_field_id String        @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  builder_id                  String        @db.Uuid
+  opportunity_id              String        @db.Uuid
+  field_name                  String        @db.VarChar(100)
+  field_value                 String?
+  field_type                  String?       @db.VarChar(50)
+  created_at                  DateTime?     @default(now()) @db.Timestamptz(6)
+  updated_at                  DateTime?     @default(now()) @db.Timestamptz(6)
+  builders                    builders      @relation(fields: [builder_id], references: [builder_id], onDelete: Cascade, onUpdate: NoAction)
+  opportunities               opportunities @relation(fields: [opportunity_id], references: [opportunity_id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@unique([opportunity_id, field_name])
+  @@index([builder_id], map: "idx_opportunities_custom_fields_builder_id")
+  @@index([opportunity_id], map: "idx_opportunities_custom_fields_opportunity_id")
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model opportunity {
+  opportunity_id                       String                      @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  builder_id                           String                      @db.Uuid
+  region_id                            String                      @db.Uuid
+  community_id                         String?                     @db.Uuid
+  customer_id                          String?                     @db.Uuid
+  opportunity_name                     String                      @db.VarChar(200)
+  opportunity_type                     String?                     @db.VarChar(100)
+  source                               String?                     @db.VarChar(100)
+  status                               String                      @default("new") @db.VarChar(50)
+  stage                                String?                     @db.VarChar(50)
+  probability_percent                  Decimal?                    @db.Decimal(5, 2)
+  estimated_value                      Decimal?                    @db.Decimal(14, 2)
+  expected_close_date                  DateTime?                   @db.Timestamptz(6)
+  actual_close_date                    DateTime?                   @db.Timestamptz(6)
+  lead_date                            DateTime?                   @db.Timestamptz(6)
+  first_contact_date                   DateTime?                   @db.Timestamptz(6)
+  last_contact_date                    DateTime?                   @db.Timestamptz(6)
+  assigned_to                          String?                     @db.Uuid
+  notes                                String?
+  lost_reason                          String?                     @db.VarChar(500)
+  competitor                           String?                     @db.VarChar(200)
+  created_by                           String?                     @db.Uuid
+  modified_by                          String?                     @db.Uuid
+  created_at                           DateTime?                   @default(now()) @db.Timestamptz(6)
+  updated_at                           DateTime?                   @default(now()) @db.Timestamptz(6)
+  users_opportunity_assigned_toTousers users?                      @relation("opportunity_assigned_toTousers", fields: [assigned_to], references: [user_id], onDelete: NoAction, onUpdate: NoAction)
+  builders                             builders                    @relation(fields: [builder_id], references: [builder_id], onDelete: Cascade, onUpdate: NoAction)
+  communities                          communities?                @relation(fields: [community_id], references: [community_id], onDelete: NoAction, onUpdate: NoAction)
+  users_opportunity_created_byTousers  users?                      @relation("opportunity_created_byTousers", fields: [created_by], references: [user_id], onDelete: NoAction, onUpdate: NoAction)
+  customers                            customers?                  @relation(fields: [customer_id], references: [customer_id], onDelete: NoAction, onUpdate: NoAction)
+  users_opportunity_modified_byTousers users?                      @relation("opportunity_modified_byTousers", fields: [modified_by], references: [user_id], onDelete: NoAction, onUpdate: NoAction)
+  regions                              regions                     @relation(fields: [region_id], references: [region_id], onDelete: NoAction, onUpdate: NoAction)
+  opportunity_custom_fields            opportunity_custom_fields[]
+
+  @@index([assigned_to], map: "idx_opportunity_assigned_to")
+  @@index([builder_id], map: "idx_opportunity_builder_id")
+  @@index([community_id], map: "idx_opportunity_community_id")
+  @@index([customer_id], map: "idx_opportunity_customer_id")
+  @@index([region_id], map: "idx_opportunity_region_id")
+  @@index([status], map: "idx_opportunity_status")
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model opportunity_custom_fields {
+  opportunity_custom_field_id                        String      @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  builder_id                                         String      @db.Uuid
+  opportunity_id                                     String      @db.Uuid
+  field_name                                         String      @db.VarChar(100)
+  field_label                                        String?     @db.VarChar(200)
+  field_type                                         String      @db.VarChar(50)
+  field_value                                        String?
+  field_order                                        Int?
+  is_required                                        Boolean?    @default(false)
+  created_by                                         String?     @db.Uuid
+  modified_by                                        String?     @db.Uuid
+  created_at                                         DateTime?   @default(now()) @db.Timestamptz(6)
+  updated_at                                         DateTime?   @default(now()) @db.Timestamptz(6)
+  builders                                           builders    @relation(fields: [builder_id], references: [builder_id], onDelete: Cascade, onUpdate: NoAction)
+  users_opportunity_custom_fields_created_byTousers  users?      @relation("opportunity_custom_fields_created_byTousers", fields: [created_by], references: [user_id], onDelete: NoAction, onUpdate: NoAction)
+  users_opportunity_custom_fields_modified_byTousers users?      @relation("opportunity_custom_fields_modified_byTousers", fields: [modified_by], references: [user_id], onDelete: NoAction, onUpdate: NoAction)
+  opportunity                                        opportunity @relation(fields: [opportunity_id], references: [opportunity_id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@index([builder_id], map: "idx_opportunity_custom_fields_builder_id")
+  @@index([opportunity_id], map: "idx_opportunity_custom_fields_opportunity_id")
+}

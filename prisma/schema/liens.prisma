@@ -1,0 +1,91 @@
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model lien_templates {
+  lien_template_id                        String    @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  builder_id                              String    @db.Uuid
+  template_name                           String    @db.VarChar(200)
+  template_description                    String?
+  lien_type                               String?   @db.VarChar(100)
+  state_code                              String?   @db.VarChar(10)
+  template_content                        String?
+  required_fields                         Json?
+  filing_deadline_days                    Int?
+  notice_period_days                      Int?
+  is_active                               Boolean?  @default(true)
+  created_by                              String?   @db.Uuid
+  modified_by                             String?   @db.Uuid
+  created_at                              DateTime? @default(now()) @db.Timestamptz(6)
+  updated_at                              DateTime? @default(now()) @db.Timestamptz(6)
+  builders                                builders  @relation(fields: [builder_id], references: [builder_id], onDelete: Cascade, onUpdate: NoAction)
+  users_lien_templates_created_byTousers  users?    @relation("lien_templates_created_byTousers", fields: [created_by], references: [user_id], onDelete: NoAction, onUpdate: NoAction)
+  users_lien_templates_modified_byTousers users?    @relation("lien_templates_modified_byTousers", fields: [modified_by], references: [user_id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@index([builder_id], map: "idx_lien_templates_builder_id")
+  @@index([state_code], map: "idx_lien_templates_state")
+  @@index([lien_type], map: "idx_lien_templates_type")
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model lien_waiver_details {
+  lien_waiver_detail_id                        String             @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  builder_id                                   String             @db.Uuid
+  lien_waiver_master_id                        String             @db.Uuid
+  po_master_id                                 String?            @db.Uuid
+  invoice_number                               String?            @db.VarChar(50)
+  invoice_date                                 DateTime?          @db.Timestamptz(6)
+  invoice_amount                               Decimal?           @db.Decimal(12, 2)
+  work_description                             String?            @db.VarChar(500)
+  work_start_date                              DateTime?          @db.Timestamptz(6)
+  work_end_date                                DateTime?          @db.Timestamptz(6)
+  amount_waived                                Decimal            @db.Decimal(12, 2)
+  amount_retained                              Decimal?           @default(0) @db.Decimal(12, 2)
+  line_order                                   Int?
+  created_by                                   String?            @db.Uuid
+  modified_by                                  String?            @db.Uuid
+  created_at                                   DateTime?          @default(now()) @db.Timestamptz(6)
+  updated_at                                   DateTime?          @default(now()) @db.Timestamptz(6)
+  builders                                     builders           @relation(fields: [builder_id], references: [builder_id], onDelete: Cascade, onUpdate: NoAction)
+  users_lien_waiver_details_created_byTousers  users?             @relation("lien_waiver_details_created_byTousers", fields: [created_by], references: [user_id], onDelete: NoAction, onUpdate: NoAction)
+  lien_waiver_master                           lien_waiver_master @relation(fields: [lien_waiver_master_id], references: [lien_waiver_master_id], onDelete: Cascade, onUpdate: NoAction)
+  users_lien_waiver_details_modified_byTousers users?             @relation("lien_waiver_details_modified_byTousers", fields: [modified_by], references: [user_id], onDelete: NoAction, onUpdate: NoAction)
+  po_master                                    po_master?         @relation(fields: [po_master_id], references: [po_master_id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@index([builder_id], map: "idx_lien_waiver_details_builder_id")
+  @@index([lien_waiver_master_id], map: "idx_lien_waiver_details_master_id")
+  @@index([po_master_id], map: "idx_lien_waiver_details_po_master_id")
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model lien_waiver_master {
+  lien_waiver_master_id                       String                @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  builder_id                                  String                @db.Uuid
+  job_id                                      String?               @db.Uuid
+  supplier_id                                 String                @db.Uuid
+  waiver_number                               String                @db.VarChar(50)
+  waiver_type                                 String?               @db.VarChar(100)
+  waiver_amount                               Decimal               @db.Decimal(12, 2)
+  waiver_date                                 DateTime              @db.Timestamptz(6)
+  through_date                                DateTime?             @db.Timestamptz(6)
+  property_description                        String?
+  status                                      String                @default("draft") @db.VarChar(50)
+  signed_date                                 DateTime?             @db.Timestamptz(6)
+  notarized_date                              DateTime?             @db.Timestamptz(6)
+  filed_date                                  DateTime?             @db.Timestamptz(6)
+  is_executed                                 Boolean?              @default(false)
+  notes                                       String?
+  created_by                                  String?               @db.Uuid
+  modified_by                                 String?               @db.Uuid
+  created_at                                  DateTime?             @default(now()) @db.Timestamptz(6)
+  updated_at                                  DateTime?             @default(now()) @db.Timestamptz(6)
+  lien_waiver_details                         lien_waiver_details[]
+  builders                                    builders              @relation(fields: [builder_id], references: [builder_id], onDelete: Cascade, onUpdate: NoAction)
+  users_lien_waiver_master_created_byTousers  users?                @relation("lien_waiver_master_created_byTousers", fields: [created_by], references: [user_id], onDelete: NoAction, onUpdate: NoAction)
+  jobs                                        jobs?                 @relation(fields: [job_id], references: [job_id], onDelete: NoAction, onUpdate: NoAction)
+  users_lien_waiver_master_modified_byTousers users?                @relation("lien_waiver_master_modified_byTousers", fields: [modified_by], references: [user_id], onDelete: NoAction, onUpdate: NoAction)
+  suppliers                                   suppliers             @relation(fields: [supplier_id], references: [supplier_id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@unique([builder_id, waiver_number])
+  @@index([builder_id], map: "idx_lien_waiver_master_builder_id")
+  @@index([job_id], map: "idx_lien_waiver_master_job_id")
+  @@index([status], map: "idx_lien_waiver_master_status")
+  @@index([supplier_id], map: "idx_lien_waiver_master_supplier_id")
+}

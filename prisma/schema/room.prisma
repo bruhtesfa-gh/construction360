@@ -1,0 +1,59 @@
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model room_master {
+  room_master_id                       String               @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  builder_id                           String               @db.Uuid
+  region_id                            String               @db.Uuid
+  room_location                        String               @db.VarChar(200)
+  floor_level                          String?              @db.VarChar(50)
+  inactive                             Boolean              @default(false)
+  inactive_date                        DateTime?            @db.Timestamptz(6)
+  inactive_by                          String?              @db.Uuid
+  created_by                           String?              @db.Uuid
+  modified_by                          String?              @db.Uuid
+  created_at                           DateTime?            @default(now()) @db.Timestamptz(6)
+  updated_at                           DateTime?            @default(now()) @db.Timestamptz(6)
+  builders                             builders             @relation(fields: [builder_id], references: [builder_id], onDelete: Cascade, onUpdate: NoAction)
+  users_room_master_created_byTousers  users?               @relation("room_master_created_byTousers", fields: [created_by], references: [user_id], onDelete: NoAction, onUpdate: NoAction)
+  users_room_master_inactive_byTousers users?               @relation("room_master_inactive_byTousers", fields: [inactive_by], references: [user_id], onDelete: NoAction, onUpdate: NoAction)
+  users_room_master_modified_byTousers users?               @relation("room_master_modified_byTousers", fields: [modified_by], references: [user_id], onDelete: NoAction, onUpdate: NoAction)
+  regions                              regions              @relation(fields: [region_id], references: [region_id], onDelete: Cascade, onUpdate: NoAction)
+  room_subcategories                   room_subcategories[]
+
+  @@unique([builder_id, region_id, room_location])
+  @@index([builder_id], map: "idx_room_master_builder_id")
+  @@index([inactive], map: "idx_room_master_inactive")
+  @@index([region_id], map: "idx_room_master_region_id")
+  @@index([room_location], map: "idx_room_master_room_location")
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model room_subcategories {
+  room_subcategory_id                         String      @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  builder_id                                  String      @db.Uuid
+  region_id                                   String      @db.Uuid
+  room_location                               String      @db.VarChar(200)
+  category_code                               String      @db.VarChar(20)
+  subcategory_code                            String      @db.VarChar(20)
+  unit_of_measure                             String      @db.VarChar(20)
+  inactive                                    Boolean     @default(false)
+  inactive_date                               DateTime?   @db.Timestamptz(6)
+  inactive_by                                 String?     @db.Uuid
+  created_by                                  String?     @db.Uuid
+  modified_by                                 String?     @db.Uuid
+  created_at                                  DateTime?   @default(now()) @db.Timestamptz(6)
+  updated_at                                  DateTime?   @default(now()) @db.Timestamptz(6)
+  builders                                    builders    @relation(fields: [builder_id], references: [builder_id], onDelete: Cascade, onUpdate: NoAction)
+  room_master                                 room_master @relation(fields: [builder_id, region_id, room_location], references: [builder_id, region_id, room_location], onDelete: Cascade, onUpdate: NoAction)
+  users_room_subcategories_created_byTousers  users?      @relation("room_subcategories_created_byTousers", fields: [created_by], references: [user_id], onDelete: NoAction, onUpdate: NoAction)
+  users_room_subcategories_inactive_byTousers users?      @relation("room_subcategories_inactive_byTousers", fields: [inactive_by], references: [user_id], onDelete: NoAction, onUpdate: NoAction)
+  users_room_subcategories_modified_byTousers users?      @relation("room_subcategories_modified_byTousers", fields: [modified_by], references: [user_id], onDelete: NoAction, onUpdate: NoAction)
+  regions                                     regions     @relation(fields: [region_id], references: [region_id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@unique([builder_id, region_id, room_location, category_code, subcategory_code, unit_of_measure])
+  @@index([builder_id], map: "idx_room_subcategories_builder_id")
+  @@index([category_code, subcategory_code], map: "idx_room_subcategories_category")
+  @@index([region_id], map: "idx_room_subcategories_region_id")
+  @@index([room_location], map: "idx_room_subcategories_room_location")
+}

@@ -6,3 +6,6 @@ dist/
 *.log
 coverage/
 .idea/
+/lib/generated/prisma
+/prisma/generated
+.next

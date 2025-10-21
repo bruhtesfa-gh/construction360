@@ -1,0 +1,246 @@
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model document_repository {
+  document_repository_id                       String                      @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  builder_id                                   String                      @db.Uuid
+  document_name                                String                      @db.VarChar(500)
+  document_type                                String?                     @db.VarChar(100)
+  file_path                                    String?                     @db.VarChar(1000)
+  file_size_bytes                              BigInt?
+  mime_type                                    String?                     @db.VarChar(100)
+  document_category                            String?                     @db.VarChar(100)
+  related_entity_type                          String?                     @db.VarChar(50)
+  related_entity_id                            String?                     @db.Uuid
+  is_template                                  Boolean?                    @default(false)
+  is_active                                    Boolean?                    @default(true)
+  uploaded_by                                  String?                     @db.Uuid
+  created_by                                   String?                     @db.Uuid
+  modified_by                                  String?                     @db.Uuid
+  created_at                                   DateTime?                   @default(now()) @db.Timestamptz(6)
+  updated_at                                   DateTime?                   @default(now()) @db.Timestamptz(6)
+  builders                                     builders                    @relation(fields: [builder_id], references: [builder_id], onDelete: Cascade, onUpdate: NoAction)
+  users_document_repository_created_byTousers  users?                      @relation("document_repository_created_byTousers", fields: [created_by], references: [user_id], onDelete: NoAction, onUpdate: NoAction)
+  users_document_repository_modified_byTousers users?                      @relation("document_repository_modified_byTousers", fields: [modified_by], references: [user_id], onDelete: NoAction, onUpdate: NoAction)
+  users_document_repository_uploaded_byTousers users?                      @relation("document_repository_uploaded_byTousers", fields: [uploaded_by], references: [user_id], onDelete: NoAction, onUpdate: NoAction)
+  documents_and_attachments                    documents_and_attachments[]
+
+  @@index([builder_id], map: "idx_document_repository_builder_id")
+  @@index([document_category], map: "idx_document_repository_category")
+  @@index([related_entity_type, related_entity_id], map: "idx_document_repository_related_entity")
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model documents_and_attachments {
+  document_attachment_id                             String               @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  builder_id                                         String               @db.Uuid
+  document_repository_id                             String?              @db.Uuid
+  attachment_name                                    String               @db.VarChar(500)
+  attachment_description                             String?
+  file_path                                          String?              @db.VarChar(1000)
+  file_size_bytes                                    BigInt?
+  mime_type                                          String?              @db.VarChar(100)
+  attachment_order                                   Int?
+  related_entity_type                                String?              @db.VarChar(50)
+  related_entity_id                                  String?              @db.Uuid
+  is_public                                          Boolean?             @default(false)
+  uploaded_by                                        String?              @db.Uuid
+  created_by                                         String?              @db.Uuid
+  modified_by                                        String?              @db.Uuid
+  created_at                                         DateTime?            @default(now()) @db.Timestamptz(6)
+  updated_at                                         DateTime?            @default(now()) @db.Timestamptz(6)
+  builders                                           builders             @relation(fields: [builder_id], references: [builder_id], onDelete: Cascade, onUpdate: NoAction)
+  users_documents_and_attachments_created_byTousers  users?               @relation("documents_and_attachments_created_byTousers", fields: [created_by], references: [user_id], onDelete: NoAction, onUpdate: NoAction)
+  document_repository                                document_repository? @relation(fields: [document_repository_id], references: [document_repository_id], onDelete: NoAction, onUpdate: NoAction)
+  users_documents_and_attachments_modified_byTousers users?               @relation("documents_and_attachments_modified_byTousers", fields: [modified_by], references: [user_id], onDelete: NoAction, onUpdate: NoAction)
+  users_documents_and_attachments_uploaded_byTousers users?               @relation("documents_and_attachments_uploaded_byTousers", fields: [uploaded_by], references: [user_id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@index([builder_id], map: "idx_documents_and_attachments_builder_id")
+  @@index([related_entity_type, related_entity_id], map: "idx_documents_and_attachments_related_entity")
+  @@index([document_repository_id], map: "idx_documents_and_attachments_repository_id")
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model docusign_documents {
+  docusign_document_id                        String             @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  builder_id                                  String             @db.Uuid
+  docusign_envelope_id                        String             @db.Uuid
+  document_id                                 String             @db.VarChar(100)
+  document_name                               String?            @db.VarChar(500)
+  document_order                              Int?
+  document_base64                             String?
+  document_url                                String?            @db.VarChar(1000)
+  page_count                                  Int?
+  created_by                                  String?            @db.Uuid
+  modified_by                                 String?            @db.Uuid
+  created_at                                  DateTime?          @default(now()) @db.Timestamptz(6)
+  updated_at                                  DateTime?          @default(now()) @db.Timestamptz(6)
+  builders                                    builders           @relation(fields: [builder_id], references: [builder_id], onDelete: Cascade, onUpdate: NoAction)
+  users_docusign_documents_created_byTousers  users?             @relation("docusign_documents_created_byTousers", fields: [created_by], references: [user_id], onDelete: NoAction, onUpdate: NoAction)
+  docusign_envelopes                          docusign_envelopes @relation(fields: [docusign_envelope_id], references: [docusign_envelope_id], onDelete: Cascade, onUpdate: NoAction)
+  users_docusign_documents_modified_byTousers users?             @relation("docusign_documents_modified_byTousers", fields: [modified_by], references: [user_id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@index([builder_id], map: "idx_docusign_documents_builder_id")
+  @@index([docusign_envelope_id], map: "idx_docusign_documents_envelope_id")
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model docusign_envelope_tabs {
+  docusign_envelope_tab_id                        String             @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  builder_id                                      String             @db.Uuid
+  docusign_envelope_id                            String             @db.Uuid
+  tab_id                                          String             @db.VarChar(100)
+  tab_label                                       String?            @db.VarChar(200)
+  tab_type                                        String?            @db.VarChar(50)
+  document_id                                     String?            @db.VarChar(100)
+  page_number                                     Int?
+  x_position                                      Decimal?           @db.Decimal(10, 2)
+  y_position                                      Decimal?           @db.Decimal(10, 2)
+  width                                           Decimal?           @db.Decimal(10, 2)
+  height                                          Decimal?           @db.Decimal(10, 2)
+  recipient_id                                    String?            @db.VarChar(100)
+  tab_value                                       String?
+  is_required                                     Boolean?           @default(false)
+  created_by                                      String?            @db.Uuid
+  modified_by                                     String?            @db.Uuid
+  created_at                                      DateTime?          @default(now()) @db.Timestamptz(6)
+  updated_at                                      DateTime?          @default(now()) @db.Timestamptz(6)
+  builders                                        builders           @relation(fields: [builder_id], references: [builder_id], onDelete: Cascade, onUpdate: NoAction)
+  users_docusign_envelope_tabs_created_byTousers  users?             @relation("docusign_envelope_tabs_created_byTousers", fields: [created_by], references: [user_id], onDelete: NoAction, onUpdate: NoAction)
+  docusign_envelopes                              docusign_envelopes @relation(fields: [docusign_envelope_id], references: [docusign_envelope_id], onDelete: Cascade, onUpdate: NoAction)
+  users_docusign_envelope_tabs_modified_byTousers users?             @relation("docusign_envelope_tabs_modified_byTousers", fields: [modified_by], references: [user_id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@index([builder_id], map: "idx_docusign_envelope_tabs_builder_id")
+  @@index([docusign_envelope_id], map: "idx_docusign_envelope_tabs_envelope_id")
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model docusign_envelopes {
+  docusign_envelope_id                        String                         @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  builder_id                                  String                         @db.Uuid
+  envelope_id                                 String                         @db.VarChar(100)
+  envelope_subject                            String?                        @db.VarChar(500)
+  envelope_message                            String?
+  status                                      String?                        @db.VarChar(50)
+  sent_date                                   DateTime?                      @db.Timestamptz(6)
+  completed_date                              DateTime?                      @db.Timestamptz(6)
+  voided_date                                 DateTime?                      @db.Timestamptz(6)
+  voided_reason                               String?                        @db.VarChar(500)
+  related_entity_type                         String?                        @db.VarChar(50)
+  related_entity_id                           String?                        @db.Uuid
+  created_by                                  String?                        @db.Uuid
+  modified_by                                 String?                        @db.Uuid
+  created_at                                  DateTime?                      @default(now()) @db.Timestamptz(6)
+  updated_at                                  DateTime?                      @default(now()) @db.Timestamptz(6)
+  docusign_documents                          docusign_documents[]
+  docusign_envelope_tabs                      docusign_envelope_tabs[]
+  builders                                    builders                       @relation(fields: [builder_id], references: [builder_id], onDelete: Cascade, onUpdate: NoAction)
+  users_docusign_envelopes_created_byTousers  users?                         @relation("docusign_envelopes_created_byTousers", fields: [created_by], references: [user_id], onDelete: NoAction, onUpdate: NoAction)
+  users_docusign_envelopes_modified_byTousers users?                         @relation("docusign_envelopes_modified_byTousers", fields: [modified_by], references: [user_id], onDelete: NoAction, onUpdate: NoAction)
+  docusign_recipient_event_log                docusign_recipient_event_log[]
+  docusign_recipient_status                   docusign_recipient_status[]
+
+  @@unique([builder_id, envelope_id])
+  @@index([builder_id], map: "idx_docusign_envelopes_builder_id")
+  @@index([envelope_id], map: "idx_docusign_envelopes_envelope_id")
+  @@index([related_entity_type, related_entity_id], map: "idx_docusign_envelopes_related_entity")
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model docusign_oauth2 {
+  docusign_oauth2_id                       String    @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  builder_id                               String    @db.Uuid
+  client_id                                String?   @db.VarChar(200)
+  client_secret_encrypted                  String?
+  access_token_encrypted                   String?
+  refresh_token_encrypted                  String?
+  token_expires_at                         DateTime? @db.Timestamptz(6)
+  account_id                               String?   @db.VarChar(100)
+  base_uri                                 String?   @db.VarChar(500)
+  is_active                                Boolean?  @default(true)
+  created_by                               String?   @db.Uuid
+  modified_by                              String?   @db.Uuid
+  created_at                               DateTime? @default(now()) @db.Timestamptz(6)
+  updated_at                               DateTime? @default(now()) @db.Timestamptz(6)
+  builders                                 builders  @relation(fields: [builder_id], references: [builder_id], onDelete: Cascade, onUpdate: NoAction)
+  users_docusign_oauth2_created_byTousers  users?    @relation("docusign_oauth2_created_byTousers", fields: [created_by], references: [user_id], onDelete: NoAction, onUpdate: NoAction)
+  users_docusign_oauth2_modified_byTousers users?    @relation("docusign_oauth2_modified_byTousers", fields: [modified_by], references: [user_id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@index([builder_id], map: "idx_docusign_oauth2_builder_id")
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model docusign_recipient_event_log {
+  docusign_recipient_event_log_id                       String             @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  builder_id                                            String             @db.Uuid
+  docusign_envelope_id                                  String             @db.Uuid
+  recipient_id                                          String             @db.VarChar(100)
+  event_type                                            String             @db.VarChar(100)
+  event_date                                            DateTime           @db.Timestamptz(6)
+  event_description                                     String?
+  ip_address                                            String?            @db.Inet
+  user_agent                                            String?
+  geo_location                                          String?            @db.VarChar(200)
+  created_by                                            String?            @db.Uuid
+  modified_by                                           String?            @db.Uuid
+  created_at                                            DateTime?          @default(now()) @db.Timestamptz(6)
+  updated_at                                            DateTime?          @default(now()) @db.Timestamptz(6)
+  builders                                              builders           @relation(fields: [builder_id], references: [builder_id], onDelete: Cascade, onUpdate: NoAction)
+  users_docusign_recipient_event_log_created_byTousers  users?             @relation("docusign_recipient_event_log_created_byTousers", fields: [created_by], references: [user_id], onDelete: NoAction, onUpdate: NoAction)
+  docusign_envelopes                                    docusign_envelopes @relation(fields: [docusign_envelope_id], references: [docusign_envelope_id], onDelete: Cascade, onUpdate: NoAction)
+  users_docusign_recipient_event_log_modified_byTousers users?             @relation("docusign_recipient_event_log_modified_byTousers", fields: [modified_by], references: [user_id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@index([builder_id], map: "idx_docusign_recipient_event_log_builder_id")
+  @@index([docusign_envelope_id], map: "idx_docusign_recipient_event_log_envelope_id")
+  @@index([recipient_id], map: "idx_docusign_recipient_event_log_recipient_id")
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model docusign_recipient_status {
+  docusign_recipient_status_id                       String             @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  builder_id                                         String             @db.Uuid
+  docusign_envelope_id                               String             @db.Uuid
+  recipient_id                                       String             @db.VarChar(100)
+  recipient_name                                     String?            @db.VarChar(200)
+  recipient_email                                    String?            @db.VarChar(200)
+  recipient_type                                     String?            @db.VarChar(50)
+  status                                             String?            @db.VarChar(50)
+  signing_order                                      Int?
+  sent_date                                          DateTime?          @db.Timestamptz(6)
+  delivered_date                                     DateTime?          @db.Timestamptz(6)
+  signed_date                                        DateTime?          @db.Timestamptz(6)
+  declined_date                                      DateTime?          @db.Timestamptz(6)
+  declined_reason                                    String?            @db.VarChar(500)
+  created_by                                         String?            @db.Uuid
+  modified_by                                        String?            @db.Uuid
+  created_at                                         DateTime?          @default(now()) @db.Timestamptz(6)
+  updated_at                                         DateTime?          @default(now()) @db.Timestamptz(6)
+  builders                                           builders           @relation(fields: [builder_id], references: [builder_id], onDelete: Cascade, onUpdate: NoAction)
+  users_docusign_recipient_status_created_byTousers  users?             @relation("docusign_recipient_status_created_byTousers", fields: [created_by], references: [user_id], onDelete: NoAction, onUpdate: NoAction)
+  docusign_envelopes                                 docusign_envelopes @relation(fields: [docusign_envelope_id], references: [docusign_envelope_id], onDelete: Cascade, onUpdate: NoAction)
+  users_docusign_recipient_status_modified_byTousers users?             @relation("docusign_recipient_status_modified_byTousers", fields: [modified_by], references: [user_id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@index([builder_id], map: "idx_docusign_recipient_status_builder_id")
+  @@index([docusign_envelope_id], map: "idx_docusign_recipient_status_envelope_id")
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model docusign_role_tabs {
+  docusign_role_tab_id                        String                  @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  builder_id                                  String                  @db.Uuid
+  digital_signature_role_id                   String                  @db.Uuid
+  tab_label                                   String                  @db.VarChar(200)
+  tab_type                                    String                  @db.VarChar(50)
+  is_required                                 Boolean?                @default(false)
+  default_value                               String?                 @db.VarChar(500)
+  validation_pattern                          String?                 @db.VarChar(200)
+  created_by                                  String?                 @db.Uuid
+  modified_by                                 String?                 @db.Uuid
+  created_at                                  DateTime?               @default(now()) @db.Timestamptz(6)
+  updated_at                                  DateTime?               @default(now()) @db.Timestamptz(6)
+  builders                                    builders                @relation(fields: [builder_id], references: [builder_id], onDelete: Cascade, onUpdate: NoAction)
+  users_docusign_role_tabs_created_byTousers  users?                  @relation("docusign_role_tabs_created_byTousers", fields: [created_by], references: [user_id], onDelete: NoAction, onUpdate: NoAction)
+  digital_signature_roles                     digital_signature_roles @relation(fields: [digital_signature_role_id], references: [digital_signature_role_id], onDelete: Cascade, onUpdate: NoAction)
+  users_docusign_role_tabs_modified_byTousers users?                  @relation("docusign_role_tabs_modified_byTousers", fields: [modified_by], references: [user_id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@index([builder_id], map: "idx_docusign_role_tabs_builder_id")
+  @@index([digital_signature_role_id], map: "idx_docusign_role_tabs_role_id")
+}

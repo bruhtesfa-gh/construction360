@@ -1,0 +1,417 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model default_suppliers {
+  default_supplier_id  String      @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  builder_id           String      @db.Uuid
+  region_id            String      @db.Uuid
+  community_id         String      @db.Uuid
+  community_phase_code String      @db.VarChar(50)
+  floor_plan_code      String      @db.VarChar(50)
+  po_index             String      @db.VarChar(40)
+  builder_supplier_id  String?     @db.Uuid
+  modified_date        DateTime?   @default(now()) @db.Timestamptz(6)
+  created_at           DateTime?   @default(now()) @db.Timestamptz(6)
+  updated_at           DateTime?   @default(now()) @db.Timestamptz(6)
+  builders             builders    @relation(fields: [builder_id], references: [builder_id], onDelete: Cascade, onUpdate: NoAction)
+  communities          communities @relation(fields: [community_id], references: [community_id], onDelete: NoAction, onUpdate: NoAction)
+  regions              regions     @relation(fields: [region_id], references: [region_id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@unique([region_id, community_id, community_phase_code, floor_plan_code, po_index])
+  @@index([builder_id], map: "idx_default_suppliers_builder_id")
+  @@index([community_id], map: "idx_default_suppliers_community_id")
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model digital_signature_roles {
+  digital_signature_role_id                        String               @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  builder_id                                       String               @db.Uuid
+  role_name                                        String               @db.VarChar(100)
+  role_description                                 String?              @db.VarChar(500)
+  signing_order                                    Int?
+  is_required                                      Boolean?             @default(true)
+  created_by                                       String?              @db.Uuid
+  modified_by                                      String?              @db.Uuid
+  created_at                                       DateTime?            @default(now()) @db.Timestamptz(6)
+  updated_at                                       DateTime?            @default(now()) @db.Timestamptz(6)
+  builders                                         builders             @relation(fields: [builder_id], references: [builder_id], onDelete: Cascade, onUpdate: NoAction)
+  users_digital_signature_roles_created_byTousers  users?               @relation("digital_signature_roles_created_byTousers", fields: [created_by], references: [user_id], onDelete: NoAction, onUpdate: NoAction)
+  users_digital_signature_roles_modified_byTousers users?               @relation("digital_signature_roles_modified_byTousers", fields: [modified_by], references: [user_id], onDelete: NoAction, onUpdate: NoAction)
+  docusign_role_tabs                               docusign_role_tabs[]
+
+  @@unique([builder_id, role_name])
+  @@index([builder_id], map: "idx_digital_signature_roles_builder_id")
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model divisions {
+  division_id                      String           @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  builder_id                       String           @db.Uuid
+  division_code                    String           @db.VarChar(50)
+  division_name                    String?          @db.VarChar(100)
+  logo                             String?          @db.VarChar(150)
+  address1                         String?          @db.VarChar(50)
+  address2                         String?          @db.VarChar(50)
+  city                             String?          @db.VarChar(50)
+  state                            String?          @db.VarChar(50)
+  zip                              String?          @db.VarChar(50)
+  home_phone                       String?          @db.VarChar(50)
+  mobile_phone                     String?          @db.VarChar(50)
+  work_phone                       String?          @db.VarChar(50)
+  fax                              String?          @db.VarChar(50)
+  email                            String?          @db.VarChar(200)
+  date_format                      String?          @db.VarChar(50)
+  quote_expiry_days                Int?
+  lot_hold_expiry_days             Int?
+  lot_hold_num_of_days             Int?
+  maps_api_key                     String?          @db.VarChar(200)
+  time_zone_id                     String?          @db.Uuid
+  business_hours_start             String?          @db.VarChar(50)
+  business_hours_end               String?          @db.VarChar(50)
+  casl                             Boolean?         @default(false)
+  digital_signature_provider       String?          @db.VarChar(50)
+  estimated_close_date_days        Int?
+  is_digital_signature_review_reqd Boolean?         @default(false)
+  sort_options_by                  String?          @db.VarChar(50)
+  external_provider_push_event_url String?          @db.VarChar(200)
+  allow_multiple_quotes_on_lots    Boolean?         @default(false)
+  sales_manager_id                 String?          @db.Uuid
+  sage_intacct_entity              String?          @db.VarChar(50)
+  sales_tax_rate                   Decimal?         @db.Decimal(10, 4)
+  accounting_db_id                 String?          @db.Uuid
+  local_time_zone_name             String?          @db.VarChar(40)
+  loan_draw_liability_acct         String?          @db.VarChar(50)
+  created_at                       DateTime?        @default(now()) @db.Timestamp(6)
+  updated_at                       DateTime?        @default(now()) @db.Timestamp(6)
+  communities                      communities[]
+  builders                         builders         @relation(fields: [builder_id], references: [builder_id], onDelete: Cascade, onUpdate: NoAction)
+  lots                             lots[]
+  regions                          regions[]
+  user_divisions                   user_divisions[]
+
+  @@unique([builder_id, division_code], map: "unique_division_code_per_builder")
+  @@index([builder_id], map: "idx_divisions_builder_id")
+  @@index([division_code], map: "idx_divisions_division_code")
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model insurance_types {
+  insurance_type_id String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  builder_id        String    @db.Uuid
+  insurance_type    String    @db.VarChar(50)
+  description       String    @db.VarChar(100)
+  is_tracking       Boolean?  @default(false)
+  created_at        DateTime? @default(now()) @db.Timestamptz(6)
+  updated_at        DateTime? @default(now()) @db.Timestamptz(6)
+  builders          builders  @relation(fields: [builder_id], references: [builder_id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@unique([builder_id, insurance_type])
+  @@index([builder_id], map: "idx_insurance_types_builder_id")
+}
+
+model payment_types {
+  payment_type_id String    @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  description     String    @db.VarChar(200)
+  created_date    DateTime? @default(now()) @db.Timestamp(6)
+  modified_date   DateTime? @default(now()) @db.Timestamp(6)
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model real_estate_brokers {
+  real_estate_broker_id                        String     @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  builder_id                                   String     @db.Uuid
+  broker_name                                  String     @db.VarChar(200)
+  company_name                                 String?    @db.VarChar(200)
+  license_number                               String?    @db.VarChar(50)
+  phone                                        String?    @db.VarChar(20)
+  mobile_phone                                 String?    @db.VarChar(20)
+  email                                        String?    @db.VarChar(200)
+  website                                      String?    @db.VarChar(500)
+  address_line1                                String?    @db.VarChar(200)
+  address_line2                                String?    @db.VarChar(200)
+  city                                         String?    @db.VarChar(100)
+  state                                        String?    @db.VarChar(50)
+  zip_code                                     String?    @db.VarChar(20)
+  commission_rate                              Decimal?   @db.Decimal(5, 4)
+  is_preferred                                 Boolean?   @default(false)
+  is_active                                    Boolean?   @default(true)
+  notes                                        String?
+  created_by                                   String?    @db.Uuid
+  modified_by                                  String?    @db.Uuid
+  created_at                                   DateTime?  @default(now()) @db.Timestamptz(6)
+  updated_at                                   DateTime?  @default(now()) @db.Timestamptz(6)
+  builders                                     builders   @relation(fields: [builder_id], references: [builder_id], onDelete: Cascade, onUpdate: NoAction)
+  users_real_estate_brokers_created_byTousers  users?     @relation("real_estate_brokers_created_byTousers", fields: [created_by], references: [user_id], onDelete: NoAction, onUpdate: NoAction)
+  users_real_estate_brokers_modified_byTousers users?     @relation("real_estate_brokers_modified_byTousers", fields: [modified_by], references: [user_id], onDelete: NoAction, onUpdate: NoAction)
+  realtors                                     realtors[]
+
+  @@index([builder_id], map: "idx_real_estate_brokers_builder_id")
+  @@index([license_number], map: "idx_real_estate_brokers_license")
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model realtors {
+  realtor_id                        String               @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  builder_id                        String               @db.Uuid
+  real_estate_broker_id             String?              @db.Uuid
+  first_name                        String               @db.VarChar(100)
+  last_name                         String               @db.VarChar(100)
+  license_number                    String?              @db.VarChar(50)
+  phone                             String?              @db.VarChar(20)
+  mobile_phone                      String?              @db.VarChar(20)
+  email                             String?              @db.VarChar(200)
+  website                           String?              @db.VarChar(500)
+  specialties                       String?              @db.VarChar(500)
+  commission_split                  Decimal?             @db.Decimal(5, 4)
+  years_experience                  Int?
+  is_active                         Boolean?             @default(true)
+  notes                             String?
+  created_by                        String?              @db.Uuid
+  modified_by                       String?              @db.Uuid
+  created_at                        DateTime?            @default(now()) @db.Timestamptz(6)
+  updated_at                        DateTime?            @default(now()) @db.Timestamptz(6)
+  builders                          builders             @relation(fields: [builder_id], references: [builder_id], onDelete: Cascade, onUpdate: NoAction)
+  users_realtors_created_byTousers  users?               @relation("realtors_created_byTousers", fields: [created_by], references: [user_id], onDelete: NoAction, onUpdate: NoAction)
+  users_realtors_modified_byTousers users?               @relation("realtors_modified_byTousers", fields: [modified_by], references: [user_id], onDelete: NoAction, onUpdate: NoAction)
+  real_estate_brokers               real_estate_brokers? @relation(fields: [real_estate_broker_id], references: [real_estate_broker_id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@index([real_estate_broker_id], map: "idx_realtors_broker_id")
+  @@index([builder_id], map: "idx_realtors_builder_id")
+  @@index([license_number], map: "idx_realtors_license")
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model regions {
+  region_id                      String                           @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  builder_id                     String                           @db.Uuid
+  region_code                    String                           @db.VarChar(50)
+  description                    String?                          @db.VarChar(200)
+  manager_id                     String?                          @db.Uuid
+  created_at                     DateTime?                        @default(now()) @db.Timestamp(6)
+  updated_at                     DateTime?                        @default(now()) @db.Timestamp(6)
+  division_id                    String                           @db.Uuid
+  ap_invoices                    ap_invoices[]
+  assembly_intersections         assembly_intersections[]
+  assembly_master                assembly_master[]
+  communities                    communities[]
+  customers                      customers[]
+  default_suppliers              default_suppliers[]
+  elevation_images               elevation_images[]
+  elevation_room_sizes           elevation_room_sizes[]
+  elevations                     elevations[]
+  estimating_db_child_item_lists estimating_db_child_item_lists[]
+  estimating_db_groups           estimating_db_groups[]
+  estimating_db_items            estimating_db_items[]
+  estimating_db_items_po_index   estimating_db_items_po_index[]
+  floor_plan_community           floor_plan_community[]
+  floor_plan_images              floor_plan_images[]
+  floor_plan_master              floor_plan_master[]
+  floor_plan_room_sizes          floor_plan_room_sizes[]
+  home_inspections               home_inspections[]
+  homes                          homes[]
+  inspection_checklists          inspection_checklists[]
+  inventory_homes                inventory_homes[]
+  job_estimate_items             job_estimate_items[]
+  job_purchase_order_index       job_purchase_order_index[]
+  job_unit_numbers               job_unit_numbers[]
+  job_unit_numbers_custom_fields job_unit_numbers_custom_fields[]
+  jobs                           jobs[]
+  jobs_custom_fields             jobs_custom_fields[]
+  lenders                        lenders[]
+  lots                           lots[]
+  opportunities                  opportunities[]
+  opportunity                    opportunity[]
+  option_categories              option_categories[]
+  option_images                  option_images[]
+  option_packages                option_packages[]
+  option_room_size_changes       option_room_size_changes[]
+  option_rules                   option_rules[]
+  option_subcategories           option_subcategories[]
+  options                        options[]
+  po_group                       po_group[]
+  po_items                       po_items[]
+  po_master                      po_master[]
+  posting_batches                posting_batches[]
+  quote_contracts                quote_contracts[]
+  builders                       builders                         @relation(fields: [builder_id], references: [builder_id], onDelete: Cascade, onUpdate: NoAction)
+  divisions                      divisions                        @relation(fields: [division_id], references: [division_id], onDelete: NoAction, onUpdate: NoAction)
+  room_master                    room_master[]
+  room_subcategories             room_subcategories[]
+  sales_price_sheet_master       sales_price_sheet_master[]
+  schedule_master_task_list      schedule_master_task_list[]
+  schedule_templates             schedule_templates[]
+  schedules                      schedules[]
+  scheduling_non_working_days    scheduling_non_working_days[]
+  scheduling_working_days        scheduling_working_days[]
+  selection_sheet_master         selection_sheet_master[]
+  supplier_bid_master            supplier_bid_master[]
+  supplier_bid_pricing           supplier_bid_pricing[]
+  supplier_costs                 supplier_costs[]
+  supplier_insurance             supplier_insurance[]
+  supplier_po_group              supplier_po_group[]
+  tax_groups                     tax_groups[]
+  user_default_regions           user_default_regions[]
+  user_regions                   user_regions[]
+  variance_po                    variance_po[]
+  warranty_problems              warranty_problems[]
+
+  @@unique([builder_id, division_id, region_code], map: "region_builder_division_region_unique")
+  @@unique([builder_id, region_code])
+  @@index([division_id], map: "idx_region_division_id")
+  @@index([builder_id], map: "idx_regions_builder_id")
+  @@index([division_id], map: "idx_regions_division_id")
+}
+
+model schema_migrations {
+  version    String    @id @db.VarChar(255)
+  applied_at DateTime? @default(now()) @db.Timestamp(6)
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model shopping_cart_selection_sheet_response {
+  shopping_cart_selection_response_id                             String                 @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  builder_id                                                      String                 @db.Uuid
+  customer_shopping_cart_id                                       String                 @db.Uuid
+  selection_sheet_question_id                                     String?                @db.Uuid
+  question_text                                                   String?                @db.VarChar(500)
+  response_value                                                  String?
+  response_type                                                   String?                @db.VarChar(50)
+  created_by                                                      String?                @db.Uuid
+  modified_by                                                     String?                @db.Uuid
+  created_at                                                      DateTime?              @default(now()) @db.Timestamptz(6)
+  updated_at                                                      DateTime?              @default(now()) @db.Timestamptz(6)
+  customer_shopping_cart                                          customer_shopping_cart @relation(fields: [customer_shopping_cart_id], references: [customer_shopping_cart_id], onDelete: Cascade, onUpdate: NoAction, map: "shopping_cart_selection_sheet_re_customer_shopping_cart_id_fkey")
+  builders                                                        builders               @relation(fields: [builder_id], references: [builder_id], onDelete: Cascade, onUpdate: NoAction)
+  users_shopping_cart_selection_sheet_response_created_byTousers  users?                 @relation("shopping_cart_selection_sheet_response_created_byTousers", fields: [created_by], references: [user_id], onDelete: NoAction, onUpdate: NoAction)
+  users_shopping_cart_selection_sheet_response_modified_byTousers users?                 @relation("shopping_cart_selection_sheet_response_modified_byTousers", fields: [modified_by], references: [user_id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@index([builder_id], map: "idx_shopping_cart_selection_response_builder_id")
+  @@index([customer_shopping_cart_id], map: "idx_shopping_cart_selection_response_cart_id")
+}
+
+model system_user_audit {
+  audit_id                                             String    @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  user_id                                              String    @db.Uuid
+  action                                               String    @db.VarChar(50)
+  from_builder_id                                      String?   @db.Uuid
+  to_builder_id                                        String?   @db.Uuid
+  session_token                                        String?   @db.VarChar(500)
+  ip_address                                           String?   @db.Inet
+  user_agent                                           String?
+  created_at                                           DateTime? @default(now()) @db.Timestamp(6)
+  builders_system_user_audit_from_builder_idTobuilders builders? @relation("system_user_audit_from_builder_idTobuilders", fields: [from_builder_id], references: [builder_id], onDelete: NoAction, onUpdate: NoAction)
+  builders_system_user_audit_to_builder_idTobuilders   builders? @relation("system_user_audit_to_builder_idTobuilders", fields: [to_builder_id], references: [builder_id], onDelete: NoAction, onUpdate: NoAction)
+  users                                                users     @relation(fields: [user_id], references: [user_id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@index([created_at], map: "idx_system_user_audit_created_at")
+  @@index([user_id], map: "idx_system_user_audit_user_id")
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model tax_groups {
+  tax_group_id  Int         @id @default(autoincrement())
+  builder_id    String      @db.Uuid
+  region_id     String      @db.Uuid
+  community_id  String      @db.Uuid
+  tax_group     String      @db.VarChar(50)
+  description   String      @db.VarChar(200)
+  njc_rate      Decimal?    @db.Decimal(9, 2)
+  jc_rate       Decimal?    @db.Decimal(9, 2)
+  created_date  DateTime?   @default(now()) @db.Timestamp(6)
+  modified_date DateTime?   @default(now()) @db.Timestamp(6)
+  builders      builders    @relation(fields: [builder_id], references: [builder_id], onDelete: Cascade, onUpdate: NoAction)
+  communities   communities @relation(fields: [community_id], references: [community_id], onDelete: Cascade, onUpdate: NoAction)
+  regions       regions     @relation(fields: [region_id], references: [region_id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@unique([region_id, community_id, tax_group])
+  @@index([builder_id], map: "idx_tax_groups_builder_id")
+  @@index([community_id], map: "idx_tax_groups_community_id")
+  @@index([region_id], map: "idx_tax_groups_region_id")
+}
+
+model unit_of_measures {
+  unit_of_measure String   @id @db.VarChar(50)
+  description     String?  @db.VarChar(100)
+  abbreviation    String?  @db.VarChar(10)
+  is_active       Boolean? @default(true)
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model variance_po {
+  variance_po_id                                                   String          @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  builder_id                                                       String          @db.Uuid
+  region_id                                                        String          @db.Uuid
+  schedule_id                                                      String?         @db.Uuid
+  vpo_request_date                                                 DateTime?       @db.Timestamp(6)
+  po_index                                                         String?         @db.VarChar(40)
+  builders_supplier_id                                             String?         @db.Uuid
+  description                                                      String?         @db.VarChar(500)
+  comments                                                         String?
+  po_number                                                        String?         @db.VarChar(40)
+  sequence                                                         BigInt          @default(autoincrement())
+  status                                                           String?         @db.VarChar(20)
+  schedule_master_task_id                                          String?         @db.Uuid
+  schedule_task_id                                                 String?         @db.Uuid
+  accounting_db_id                                                 String?         @db.Uuid
+  vpo_reason                                                       String?         @db.Uuid
+  vpo_notes                                                        String?
+  vpo_budget                                                       Decimal?        @db.Decimal(9, 2)
+  start_date                                                       DateTime?       @db.Timestamp(6)
+  lead_time                                                        Int?
+  duration                                                         Int?
+  supplier_comments                                                String?
+  approved_by                                                      String?         @db.Uuid
+  date_sent                                                        DateTime?       @db.Timestamp(6)
+  date_received                                                    DateTime?       @db.Timestamp(6)
+  date_approved                                                    DateTime?       @db.Timestamp(6)
+  date_declined                                                    DateTime?       @db.Timestamp(6)
+  back_charge_builder_supplier_id                                  String?         @db.Uuid
+  back_charge_comments                                             String?         @db.VarChar(2000)
+  purchaser_id                                                     String?         @db.Uuid
+  internal_comments                                                String?
+  show_internal_comments                                           Boolean?        @default(false)
+  delivery_date                                                    DateTime?       @db.Timestamp(6)
+  sent_to_vendor_by                                                String?         @db.Uuid
+  delivery_address                                                 String?         @db.VarChar(200)
+  created_by                                                       String?         @db.Uuid
+  created_date                                                     DateTime?       @default(now()) @db.Timestamp(6)
+  create_schedule_task                                             Boolean?        @default(false)
+  is_seasonal                                                      Boolean?        @default(false)
+  declined_by                                                      String?         @db.Uuid
+  po_master_id                                                     String?         @db.Uuid
+  modified_date                                                    DateTime?       @default(now()) @db.Timestamp(6)
+  users_variance_po_approved_byTousers                             users?          @relation("variance_po_approved_byTousers", fields: [approved_by], references: [user_id], onUpdate: NoAction)
+  suppliers_variance_po_back_charge_builder_supplier_idTosuppliers suppliers?      @relation("variance_po_back_charge_builder_supplier_idTosuppliers", fields: [back_charge_builder_supplier_id], references: [supplier_id], onUpdate: NoAction)
+  builders                                                         builders        @relation(fields: [builder_id], references: [builder_id], onDelete: Cascade, onUpdate: NoAction)
+  suppliers_variance_po_builders_supplier_idTosuppliers            suppliers?      @relation("variance_po_builders_supplier_idTosuppliers", fields: [builders_supplier_id], references: [supplier_id], onUpdate: NoAction)
+  users_variance_po_created_byTousers                              users?          @relation("variance_po_created_byTousers", fields: [created_by], references: [user_id], onUpdate: NoAction)
+  users_variance_po_declined_byTousers                             users?          @relation("variance_po_declined_byTousers", fields: [declined_by], references: [user_id], onUpdate: NoAction)
+  po_master                                                        po_master?      @relation(fields: [po_master_id], references: [po_master_id], onUpdate: NoAction)
+  users_variance_po_purchaser_idTousers                            users?          @relation("variance_po_purchaser_idTousers", fields: [purchaser_id], references: [user_id], onUpdate: NoAction)
+  regions                                                          regions         @relation(fields: [region_id], references: [region_id], onDelete: Cascade, onUpdate: NoAction)
+  schedules                                                        schedules?      @relation(fields: [schedule_id], references: [schedule_id], onUpdate: NoAction)
+  schedule_tasks                                                   schedule_tasks? @relation(fields: [schedule_task_id], references: [schedule_task_id], onUpdate: NoAction)
+  users_variance_po_sent_to_vendor_byTousers                       users?          @relation("variance_po_sent_to_vendor_byTousers", fields: [sent_to_vendor_by], references: [user_id], onUpdate: NoAction)
+
+  @@index([builder_id], map: "idx_variance_po_builder_id")
+  @@index([po_master_id], map: "idx_variance_po_po_master_id")
+  @@index([po_number], map: "idx_variance_po_po_number")
+  @@index([region_id], map: "idx_variance_po_region_id")
+  @@index([schedule_id], map: "idx_variance_po_schedule_id")
+}

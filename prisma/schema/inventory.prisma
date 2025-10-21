@@ -1,0 +1,177 @@
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model inventory_home_co_master {
+  inventory_home_co_master_id                                       String            @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  builder_id                                                        String            @db.Uuid
+  inventory_home_id                                                 String            @db.Uuid
+  change_order_number                                               Int
+  is_deleted                                                        Boolean?          @default(false)
+  prefix_value                                                      String?           @db.VarChar(20)
+  co_date                                                           DateTime?         @db.Timestamptz(6)
+  customer_approved                                                 Boolean?          @default(false)
+  customer_approved_date                                            DateTime?         @db.Timestamptz(6)
+  final_approval_date                                               DateTime?         @db.Timestamptz(6)
+  final_approved                                                    Boolean?          @default(false)
+  final_approval_by                                                 String?           @db.Uuid
+  final_approval_rescinded_by                                       String?           @db.Uuid
+  final_approval_rescinded_date                                     DateTime?         @db.Timestamptz(6)
+  estimating_approved                                               Boolean?          @default(false)
+  estimating_approved_date                                          DateTime?         @db.Timestamptz(6)
+  comments                                                          String?
+  co_fee                                                            Decimal?          @db.Decimal(7, 2)
+  co_pre_tax                                                        Decimal?          @db.Decimal(12, 2)
+  co_tax                                                            Decimal?          @db.Decimal(12, 2)
+  co_grand_total                                                    Decimal?          @db.Decimal(12, 2)
+  deposit_paid                                                      Decimal?          @db.Decimal(12, 2)
+  deposit_paid_date                                                 DateTime?         @db.Timestamptz(6)
+  created_by                                                        String            @db.Uuid
+  modified_by                                                       String            @db.Uuid
+  created_at                                                        DateTime?         @default(now()) @db.Timestamptz(6)
+  updated_at                                                        DateTime?         @default(now()) @db.Timestamptz(6)
+  home_selections                                                   home_selections[]
+  builders                                                          builders          @relation(fields: [builder_id], references: [builder_id], onDelete: Cascade, onUpdate: NoAction)
+  users_inventory_home_co_master_created_byTousers                  users             @relation("inventory_home_co_master_created_byTousers", fields: [created_by], references: [user_id], onDelete: NoAction, onUpdate: NoAction)
+  users_inventory_home_co_master_final_approval_byTousers           users?            @relation("inventory_home_co_master_final_approval_byTousers", fields: [final_approval_by], references: [user_id], onDelete: NoAction, onUpdate: NoAction)
+  users_inventory_home_co_master_final_approval_rescinded_byTousers users?            @relation("inventory_home_co_master_final_approval_rescinded_byTousers", fields: [final_approval_rescinded_by], references: [user_id], onDelete: NoAction, onUpdate: NoAction)
+  inventory_homes                                                   inventory_homes   @relation(fields: [inventory_home_id], references: [inventory_home_id], onDelete: Cascade, onUpdate: NoAction)
+  users_inventory_home_co_master_modified_byTousers                 users             @relation("inventory_home_co_master_modified_byTousers", fields: [modified_by], references: [user_id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@index([builder_id], map: "idx_inventory_home_co_master_builder_id")
+  @@index([inventory_home_id], map: "idx_inventory_home_co_master_inventory_home_id")
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model inventory_home_types {
+  inventory_home_type_id String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  builder_id             String    @db.Uuid
+  inventory_home_type    String    @db.VarChar(50)
+  customized_description String?   @db.VarChar(50)
+  created_at             DateTime? @default(now()) @db.Timestamptz(6)
+  updated_at             DateTime? @default(now()) @db.Timestamptz(6)
+  builders               builders  @relation(fields: [builder_id], references: [builder_id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@unique([builder_id, inventory_home_type])
+  @@index([builder_id], map: "idx_inventory_home_types_builder_id")
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model inventory_homes {
+  inventory_home_id                                          String                          @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  builder_id                                                 String                          @db.Uuid
+  region_id                                                  String                          @db.Uuid
+  community_id                                               String                          @db.Uuid
+  community_phase_code                                       String?                         @db.VarChar(50)
+  lot_inventory_id                                           String?                         @db.Uuid
+  floor_plan_id                                              String?                         @db.Uuid
+  elevation_id                                               String?                         @db.Uuid
+  floor_plan_code                                            String?                         @db.VarChar(50)
+  series                                                     String?                         @db.VarChar(50)
+  elevation_code                                             String?                         @db.VarChar(50)
+  floor_plan_price                                           Decimal?                        @db.Decimal(12, 2)
+  elevation_price                                            Decimal?                        @db.Decimal(12, 2)
+  lot_price                                                  Decimal?                        @db.Decimal(12, 2)
+  garage_orientation                                         String?                         @db.VarChar(50)
+  exterior_color                                             String?                         @db.VarChar(100)
+  sales_incentives                                           Decimal?                        @db.Decimal(12, 2)
+  is_estimated                                               Boolean?                        @default(false)
+  estimated_date                                             DateTime?                       @db.Timestamptz(6)
+  job_number                                                 String?                         @db.VarChar(50)
+  unit_number                                                String?                         @db.VarChar(50)
+  schedule_template_id                                       String?                         @db.Uuid
+  construction_start_date                                    DateTime?                       @db.Timestamptz(6)
+  stage_of_construction                                      Int?
+  lot_info_tooltip                                           String?
+  main_floor_size                                            Decimal?                        @db.Decimal(9, 2)
+  lower_level_size                                           Decimal?                        @db.Decimal(9, 2)
+  second_level_size                                          Decimal?                        @db.Decimal(9, 2)
+  third_level_size                                           Decimal?                        @db.Decimal(9, 2)
+  garage_size                                                Decimal?                        @db.Decimal(9, 2)
+  total_size                                                 Decimal?                        @db.Decimal(9, 2)
+  permit_applied_for_date                                    DateTime?                       @db.Timestamptz(6)
+  permit_received_date                                       DateTime?                       @db.Timestamptz(6)
+  permit_released_date                                       DateTime?                       @db.Timestamptz(6)
+  permit_number                                              String?                         @db.VarChar(50)
+  scheduled_start_date                                       DateTime?                       @db.Timestamptz(6)
+  construction_stage                                         Int?
+  not_available_for_sale                                     Boolean?                        @default(false)
+  release_to_estimating                                      Boolean?                        @default(false)
+  project_manager_id                                         String?                         @db.Uuid
+  estimator_id                                               String?                         @db.Uuid
+  design_center_sales_person_id                              String?                         @db.Uuid
+  sales_person_id                                            String?                         @db.Uuid
+  addl_premium                                               Decimal?                        @db.Decimal(12, 2)
+  pre_construction_stage                                     Int?
+  floor_plan_assembly_id                                     String?                         @db.Uuid
+  elevation_assembly_id                                      String?                         @db.Uuid
+  inventory_home_type                                        String?                         @db.VarChar(50)
+  pre_contract_selection_sheet                               String?                         @db.Uuid
+  post_contract_selection_sheet                              String?                         @db.Uuid
+  description                                                String?                         @db.VarChar(200)
+  marketing_info                                             String?
+  home_id                                                    String?                         @db.Uuid
+  created_by                                                 String                          @db.Uuid
+  modified_by                                                String                          @db.Uuid
+  created_at                                                 DateTime?                       @default(now()) @db.Timestamptz(6)
+  updated_at                                                 DateTime?                       @default(now()) @db.Timestamptz(6)
+  home_selections                                            home_selections[]
+  inventory_home_co_master                                   inventory_home_co_master[]
+  builders                                                   builders                        @relation(fields: [builder_id], references: [builder_id], onDelete: Cascade, onUpdate: NoAction)
+  communities                                                communities                     @relation(fields: [community_id], references: [community_id], onDelete: NoAction, onUpdate: NoAction)
+  users_inventory_homes_created_byTousers                    users                           @relation("inventory_homes_created_byTousers", fields: [created_by], references: [user_id], onDelete: NoAction, onUpdate: NoAction)
+  users_inventory_homes_design_center_sales_person_idTousers users?                          @relation("inventory_homes_design_center_sales_person_idTousers", fields: [design_center_sales_person_id], references: [user_id], onDelete: NoAction, onUpdate: NoAction)
+  elevations                                                 elevations?                     @relation(fields: [elevation_id], references: [elevation_id], onDelete: NoAction, onUpdate: NoAction)
+  users_inventory_homes_estimator_idTousers                  users?                          @relation("inventory_homes_estimator_idTousers", fields: [estimator_id], references: [user_id], onDelete: NoAction, onUpdate: NoAction)
+  floor_plan_community                                       floor_plan_community?           @relation(fields: [floor_plan_id], references: [floor_plan_community_id], onDelete: NoAction, onUpdate: NoAction)
+  lots                                                       lots?                           @relation(fields: [lot_inventory_id], references: [lot_id], onDelete: NoAction, onUpdate: NoAction, map: "inventory_homes_lot_id_fkey")
+  users_inventory_homes_modified_byTousers                   users                           @relation("inventory_homes_modified_byTousers", fields: [modified_by], references: [user_id], onDelete: NoAction, onUpdate: NoAction)
+  users_inventory_homes_project_manager_idTousers            users?                          @relation("inventory_homes_project_manager_idTousers", fields: [project_manager_id], references: [user_id], onDelete: NoAction, onUpdate: NoAction)
+  regions                                                    regions                         @relation(fields: [region_id], references: [region_id], onDelete: NoAction, onUpdate: NoAction)
+  users_inventory_homes_sales_person_idTousers               users?                          @relation("inventory_homes_sales_person_idTousers", fields: [sales_person_id], references: [user_id], onDelete: NoAction, onUpdate: NoAction)
+  inventory_homes_custom_fields                              inventory_homes_custom_fields[]
+  inventory_homes_room_sizes                                 inventory_homes_room_sizes[]
+  job_estimate_items                                         job_estimate_items[]
+  po_items                                                   po_items[]
+  po_items_co                                                po_items_co[]
+  schedules                                                  schedules[]
+
+  @@index([builder_id], map: "idx_inventory_homes_builder_id")
+  @@index([community_id], map: "idx_inventory_homes_community_id")
+  @@index([job_number], map: "idx_inventory_homes_job_number")
+  @@index([lot_inventory_id], map: "idx_inventory_homes_lot_inventory_id")
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model inventory_homes_custom_fields {
+  inventory_home_custom_field_id String          @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  builder_id                     String          @db.Uuid
+  inventory_home_id              String          @db.Uuid
+  field_name                     String          @db.VarChar(100)
+  field_value                    String?
+  field_type                     String?         @db.VarChar(50)
+  created_at                     DateTime?       @default(now()) @db.Timestamptz(6)
+  updated_at                     DateTime?       @default(now()) @db.Timestamptz(6)
+  builders                       builders        @relation(fields: [builder_id], references: [builder_id], onDelete: Cascade, onUpdate: NoAction)
+  inventory_homes                inventory_homes @relation(fields: [inventory_home_id], references: [inventory_home_id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@unique([inventory_home_id, field_name])
+  @@index([builder_id], map: "idx_inventory_homes_custom_fields_builder_id")
+  @@index([inventory_home_id], map: "idx_inventory_homes_custom_fields_inventory_home_id")
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model inventory_homes_room_sizes {
+  inventory_home_room_size_id String          @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  builder_id                  String          @db.Uuid
+  inventory_home_id           String          @db.Uuid
+  room                        String          @db.VarChar(200)
+  sub_category                String          @db.VarChar(50)
+  unit_of_measure             String          @db.VarChar(50)
+  quantity                    Decimal?        @db.Decimal(10, 4)
+  created_at                  DateTime?       @default(now()) @db.Timestamptz(6)
+  updated_at                  DateTime?       @default(now()) @db.Timestamptz(6)
+  builders                    builders        @relation(fields: [builder_id], references: [builder_id], onDelete: Cascade, onUpdate: NoAction)
+  inventory_homes             inventory_homes @relation(fields: [inventory_home_id], references: [inventory_home_id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@unique([inventory_home_id, room, sub_category, unit_of_measure])
+  @@index([builder_id], map: "idx_inventory_homes_room_sizes_builder_id")
+  @@index([inventory_home_id], map: "idx_inventory_homes_room_sizes_inventory_home_id")
+}

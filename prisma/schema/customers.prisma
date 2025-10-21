@@ -1,0 +1,65 @@
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model customer_shopping_cart {
+  customer_shopping_cart_id                       String                                   @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  builder_id                                      String                                   @db.Uuid
+  customer_id                                     String                                   @db.Uuid
+  session_id                                      String?                                  @db.VarChar(100)
+  item_type                                       String                                   @db.VarChar(50)
+  item_id                                         String                                   @db.Uuid
+  item_name                                       String?                                  @db.VarChar(200)
+  item_description                                String?
+  quantity                                        Int?                                     @default(1)
+  unit_price                                      Decimal?                                 @db.Decimal(12, 2)
+  total_price                                     Decimal?                                 @db.Decimal(12, 2)
+  discount_amount                                 Decimal?                                 @default(0) @db.Decimal(12, 2)
+  item_configuration                              Json?
+  added_date                                      DateTime?                                @default(now()) @db.Timestamptz(6)
+  last_modified                                   DateTime?                                @default(now()) @db.Timestamptz(6)
+  is_saved_for_later                              Boolean?                                 @default(false)
+  created_by                                      String?                                  @db.Uuid
+  modified_by                                     String?                                  @db.Uuid
+  created_at                                      DateTime?                                @default(now()) @db.Timestamptz(6)
+  updated_at                                      DateTime?                                @default(now()) @db.Timestamptz(6)
+  builders                                        builders                                 @relation(fields: [builder_id], references: [builder_id], onDelete: Cascade, onUpdate: NoAction)
+  users_customer_shopping_cart_created_byTousers  users?                                   @relation("customer_shopping_cart_created_byTousers", fields: [created_by], references: [user_id], onDelete: NoAction, onUpdate: NoAction)
+  customers                                       customers                                @relation(fields: [customer_id], references: [customer_id], onDelete: Cascade, onUpdate: NoAction)
+  users_customer_shopping_cart_modified_byTousers users?                                   @relation("customer_shopping_cart_modified_byTousers", fields: [modified_by], references: [user_id], onDelete: NoAction, onUpdate: NoAction)
+  shopping_cart_selection_sheet_response          shopping_cart_selection_sheet_response[]
+
+  @@index([builder_id], map: "idx_customer_shopping_cart_builder_id")
+  @@index([customer_id], map: "idx_customer_shopping_cart_customer_id")
+  @@index([session_id], map: "idx_customer_shopping_cart_session_id")
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model customers {
+  customer_id            String                   @id(map: "customer_pkey") @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  region_id              String                   @db.Uuid
+  builder_id             String                   @db.Uuid
+  accounting_db_id       String?                  @db.Uuid
+  customer_name          String?                  @db.VarChar(100)
+  address1               String?                  @db.VarChar(100)
+  address2               String?                  @db.VarChar(100)
+  city                   String?                  @db.VarChar(50)
+  state                  String?                  @db.VarChar(10)
+  zip                    String?                  @db.VarChar(10)
+  cell_phone             String?                  @db.VarChar(20)
+  email                  String?                  @db.VarChar(50)
+  home_phone             String?                  @db.VarChar(20)
+  work_phone             String?                  @db.VarChar(20)
+  company_name           String?                  @db.VarChar(100)
+  customer_is_a_company  Boolean?
+  accounting_customer_id String?                  @db.Uuid
+  inactive               Boolean?
+  created_at             DateTime?                @default(now()) @db.Timestamp(6)
+  updated_at             DateTime?                @default(now()) @db.Timestamp(6)
+  customer_shopping_cart customer_shopping_cart[]
+  builders               builders                 @relation(fields: [builder_id], references: [builder_id], onDelete: Cascade, onUpdate: NoAction)
+  regions                regions                  @relation(fields: [region_id], references: [region_id], onDelete: Cascade, onUpdate: NoAction)
+  opportunity            opportunity[]
+  warranty_problems      warranty_problems[]
+
+  @@unique([region_id, customer_id], map: "customer_region_id_customer_id_key")
+  @@index([builder_id], map: "idx_customers_builder_id")
+  @@index([region_id], map: "idx_customers_region_id")
+}

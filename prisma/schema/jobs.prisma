@@ -1,0 +1,305 @@
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model job_estimate_items {
+  est_item_id                                 String            @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  builder_id                                  String            @db.Uuid
+  home_selection_id                           String?           @db.Uuid
+  inventory_home_id                           String?           @db.Uuid
+  quote_contract_id                           String?           @db.Uuid
+  is_deleted                                  Boolean?          @default(false)
+  po_index                                    String?           @db.VarChar(40)
+  estimating_db_group                         String?           @db.VarChar(20)
+  estimating_db_item                          String?           @db.VarChar(20)
+  job_number                                  String?           @db.VarChar(50)
+  unit_number                                 String?           @db.VarChar(50)
+  jc_extra                                    String?           @default("") @db.VarChar(50)
+  jc_cost_code                                String?           @db.VarChar(50)
+  jc_cost_type                                String?           @db.VarChar(50)
+  sort_order                                  Int?
+  description                                 String?           @db.VarChar(200)
+  comments                                    String?
+  takeoff_qty                                 Decimal?          @default(0) @db.Decimal(14, 4)
+  takeoff_uom                                 String?           @db.VarChar(20)
+  conversion_factor                           Decimal?          @db.Decimal(10, 4)
+  order_uom                                   String?           @db.VarChar(20)
+  budget_supplier_id                          String?           @db.Uuid
+  budget_qty                                  Decimal?          @default(0) @db.Decimal(14, 4)
+  budget_rate                                 Decimal?          @default(0) @db.Decimal(14, 4)
+  budget_pretax                               Decimal?          @default(0) @db.Decimal(14, 2)
+  budget_tax_group                            String?           @db.VarChar(50)
+  budget_jc_tax                               Decimal?          @default(0) @db.Decimal(12, 2)
+  budget_jc_tax_rate                          Decimal?          @default(0) @db.Decimal(7, 2)
+  budget_njc_tax                              Decimal?          @default(0) @db.Decimal(12, 2)
+  budget_njc_tax_rate                         Decimal?          @default(0) @db.Decimal(7, 2)
+  po_supplier_id                              String?           @db.Uuid
+  po_qty                                      Decimal?          @default(0) @db.Decimal(14, 4)
+  po_rate                                     Decimal?          @default(0) @db.Decimal(14, 4)
+  po_pretax                                   Decimal?          @default(0) @db.Decimal(14, 2)
+  po_tax_group                                String?           @db.VarChar(50)
+  po_jc_tax                                   Decimal?          @default(0) @db.Decimal(12, 2)
+  po_jc_tax_rate                              Decimal?          @default(0) @db.Decimal(7, 2)
+  po_njc_tax                                  Decimal?          @default(0) @db.Decimal(12, 2)
+  po_njc_tax_rate                             Decimal?          @default(0) @db.Decimal(7, 2)
+  po_number                                   String?           @db.VarChar(40)
+  original_jc_category                        String?           @db.VarChar(40)
+  added_after_finalized                       Boolean?          @default(false)
+  budget_generated                            Boolean?          @default(false)
+  budget_posting_batch                        Int?
+  po_gen_batch                                Int?
+  budget_deleted                              Boolean?          @default(false)
+  po_deleted                                  Boolean?          @default(false)
+  budget_overridden                           Boolean?          @default(false)
+  po_overridden                               Boolean?          @default(false)
+  assembly_id                                 String?           @db.Uuid
+  assembly_description                        String?           @db.VarChar(500)
+  floor_plan_code                             String?           @db.VarChar(50)
+  room_location                               String?           @db.VarChar(200)
+  sales_qty                                   Decimal?          @db.Decimal(10, 4)
+  region_id                                   String            @db.Uuid
+  budget_posting_date                         DateTime?         @db.Timestamptz(6)
+  variance_jc_cost_type                       String?           @db.VarChar(20)
+  budget_rate1                                Decimal?          @default(0) @db.Decimal(14, 4)
+  budget_qty1                                 Decimal?          @default(0) @db.Decimal(14, 4)
+  budget_rate2                                Decimal?          @default(0) @db.Decimal(14, 4)
+  budget_qty2                                 Decimal?          @default(0) @db.Decimal(14, 4)
+  budget_rate3                                Decimal?          @default(0) @db.Decimal(14, 4)
+  budget_qty3                                 Decimal?          @default(0) @db.Decimal(14, 4)
+  po_change_order                             String?           @db.VarChar(50)
+  series                                      String?           @db.VarChar(50)
+  option_code                                 String?           @db.VarChar(50)
+  elevation_code                              String?           @db.VarChar(50)
+  original_est_item_id                        BigInt?           @default(0)
+  home_id                                     String?           @db.Uuid
+  use_base_floor_plan_cost                    Boolean?          @default(false)
+  use_elevation_cost                          Boolean?          @default(false)
+  version_number                              Int?              @default(0)
+  child_item_list_id                          String?           @db.Uuid
+  child_item_id                               String?           @db.Uuid
+  child_item_description                      String?           @db.VarChar(200)
+  child_item_rate                             Decimal?          @db.Decimal(14, 4)
+  sub_child_list_id                           String?           @db.Uuid
+  sub_child_item_id                           String?           @db.Uuid
+  sub_child_item_description                  String?           @db.VarChar(200)
+  sub_child_item_rate                         Decimal?          @db.Decimal(14, 4)
+  estimating_db_item_id                       String?           @db.Uuid
+  deleted_date                                DateTime?         @db.Timestamptz(6)
+  deleted_by                                  String?           @db.Uuid
+  warranty_deficiency_id                      Int?              @default(0)
+  created_by                                  String            @db.Uuid
+  modified_by                                 String            @db.Uuid
+  created_at                                  DateTime?         @default(now()) @db.Timestamptz(6)
+  updated_at                                  DateTime?         @default(now()) @db.Timestamptz(6)
+  builders                                    builders          @relation(fields: [builder_id], references: [builder_id], onDelete: Cascade, onUpdate: NoAction)
+  users_job_estimate_items_created_byTousers  users             @relation("job_estimate_items_created_byTousers", fields: [created_by], references: [user_id], onDelete: NoAction, onUpdate: NoAction)
+  users_job_estimate_items_deleted_byTousers  users?            @relation("job_estimate_items_deleted_byTousers", fields: [deleted_by], references: [user_id], onDelete: NoAction, onUpdate: NoAction)
+  home_selections                             home_selections?  @relation(fields: [home_selection_id], references: [home_selection_id], onDelete: NoAction, onUpdate: NoAction)
+  inventory_homes                             inventory_homes?  @relation(fields: [inventory_home_id], references: [inventory_home_id], onDelete: NoAction, onUpdate: NoAction)
+  users_job_estimate_items_modified_byTousers users             @relation("job_estimate_items_modified_byTousers", fields: [modified_by], references: [user_id], onDelete: NoAction, onUpdate: NoAction)
+  quote_contracts                             quote_contracts?  @relation(fields: [quote_contract_id], references: [quote_contract_id], onDelete: NoAction, onUpdate: NoAction)
+  regions                                     regions           @relation(fields: [region_id], references: [region_id], onDelete: NoAction, onUpdate: NoAction)
+  job_unit_numbers                            job_unit_numbers? @relation(fields: [region_id, job_number, unit_number], references: [region_id, job_number, unit_number], onDelete: NoAction, onUpdate: NoAction)
+
+  @@index([builder_id], map: "idx_job_estimate_items_builder_id")
+  @@index([home_selection_id], map: "idx_job_estimate_items_home_selection_id")
+  @@index([job_number, unit_number], map: "idx_job_estimate_items_job_unit")
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model job_purchase_order_index {
+  job_po_index_id                                   String           @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  builder_id                                        String           @db.Uuid
+  region_id                                         String           @db.Uuid
+  job_number                                        String           @db.VarChar(50)
+  unit_number                                       String           @db.VarChar(50)
+  po_index                                          String           @db.VarChar(40)
+  description                                       String?          @db.VarChar(200)
+  notes                                             String?
+  standard_text                                     String?          @db.VarChar(2000)
+  hide_qty                                          Boolean?         @default(false)
+  hide_price                                        Boolean?         @default(false)
+  total_only                                        Boolean?         @default(false)
+  schedule_task_id                                  Int?
+  release_task_id                                   Int?
+  payment_term                                      Int?
+  fob                                               String?          @db.VarChar(50)
+  ship_via                                          String?          @db.VarChar(50)
+  terms                                             String?
+  retainage_percent                                 Decimal?         @db.Decimal(9, 2)
+  po_type                                           String?          @db.VarChar(15)
+  pay_point1_percent                                Decimal?         @default(100) @db.Decimal(9, 2)
+  pay_point2_percent                                Decimal?         @db.Decimal(9, 2)
+  pay_point3_percent                                Decimal?         @db.Decimal(9, 2)
+  pay_point4_percent                                Decimal?         @db.Decimal(9, 2)
+  pay_point5_percent                                Decimal?         @db.Decimal(9, 2)
+  pay_point1_sched_task                             Int?
+  pay_point2_sched_task                             Int?
+  pay_point3_sched_task                             Int?
+  pay_point4_sched_task                             Int?
+  pay_point5_sched_task                             Int?
+  requires_payment_approval                         Boolean?         @default(true)
+  mpo                                               Boolean?         @default(false)
+  use_in_scheduling                                 Boolean?         @default(true)
+  require_lien_release                              Boolean?         @default(false)
+  last_po_seq                                       Int?
+  created_by                                        String           @db.Uuid
+  modified_by                                       String           @db.Uuid
+  created_at                                        DateTime?        @default(now()) @db.Timestamptz(6)
+  updated_at                                        DateTime?        @default(now()) @db.Timestamptz(6)
+  builders                                          builders         @relation(fields: [builder_id], references: [builder_id], onDelete: Cascade, onUpdate: NoAction)
+  users_job_purchase_order_index_created_byTousers  users            @relation("job_purchase_order_index_created_byTousers", fields: [created_by], references: [user_id], onDelete: NoAction, onUpdate: NoAction)
+  users_job_purchase_order_index_modified_byTousers users            @relation("job_purchase_order_index_modified_byTousers", fields: [modified_by], references: [user_id], onDelete: NoAction, onUpdate: NoAction)
+  regions                                           regions          @relation(fields: [region_id], references: [region_id], onDelete: NoAction, onUpdate: NoAction)
+  job_unit_numbers                                  job_unit_numbers @relation(fields: [region_id, job_number, unit_number], references: [region_id, job_number, unit_number], onDelete: NoAction, onUpdate: NoAction)
+
+  @@unique([region_id, job_number, unit_number, po_index])
+  @@index([builder_id], map: "idx_job_purchase_order_index_builder_id")
+  @@index([po_index], map: "idx_job_purchase_order_index_po_index")
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model job_unit_numbers {
+  job_unit_number_id                                    String                           @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  builder_id                                            String                           @db.Uuid
+  region_id                                             String                           @db.Uuid
+  job_number                                            String                           @db.VarChar(50)
+  unit_number                                           String                           @db.VarChar(50)
+  description                                           String?                          @db.VarChar(200)
+  community_id                                          String?                          @db.Uuid
+  external_system_code                                  String?                          @db.VarChar(50)
+  material_sales_tax_group                              String?                          @db.VarChar(50)
+  labor_sales_tax_group                                 String?                          @db.VarChar(50)
+  subcontract_sales_tax_group                           String?                          @db.VarChar(50)
+  other_sales_tax_group                                 String?                          @db.VarChar(50)
+  site_superintendent_id                                String?                          @db.Uuid
+  project_manager_id                                    String?                          @db.Uuid
+  estimator_id                                          String?                          @db.Uuid
+  warranty_rep_id                                       String?                          @db.Uuid
+  warranty_service_rep_id                               String?                          @db.Uuid
+  schedule_template_id                                  String?                          @db.Uuid
+  permit_applied_for_date                               DateTime?                        @db.Timestamptz(6)
+  permit_received_date                                  DateTime?                        @db.Timestamptz(6)
+  permit_released_date                                  DateTime?                        @db.Timestamptz(6)
+  permit_number                                         String?                          @db.VarChar(50)
+  scheduled_start_date                                  DateTime?                        @db.Timestamptz(6)
+  construction_start_date                               DateTime?                        @db.Timestamptz(6)
+  construction_stage                                    Int?                             @default(0)
+  floor                                                 String?                          @db.VarChar(20)
+  building                                              String?                          @db.VarChar(20)
+  job_unit_number_status                                String?                          @db.VarChar(20)
+  home_id                                               String?                          @db.Uuid
+  created_at                                            DateTime?                        @default(now()) @db.Timestamptz(6)
+  updated_at                                            DateTime?                        @default(now()) @db.Timestamptz(6)
+  job_estimate_items                                    job_estimate_items[]
+  job_purchase_order_index                              job_purchase_order_index[]
+  builders                                              builders                         @relation(fields: [builder_id], references: [builder_id], onDelete: Cascade, onUpdate: NoAction)
+  communities                                           communities?                     @relation(fields: [community_id], references: [community_id], onDelete: NoAction, onUpdate: NoAction)
+  users_job_unit_numbers_estimator_idTousers            users?                           @relation("job_unit_numbers_estimator_idTousers", fields: [estimator_id], references: [user_id], onDelete: NoAction, onUpdate: NoAction)
+  users_job_unit_numbers_project_manager_idTousers      users?                           @relation("job_unit_numbers_project_manager_idTousers", fields: [project_manager_id], references: [user_id], onDelete: NoAction, onUpdate: NoAction)
+  regions                                               regions                          @relation(fields: [region_id], references: [region_id], onDelete: NoAction, onUpdate: NoAction)
+  jobs                                                  jobs                             @relation(fields: [region_id, job_number], references: [region_id, job_number], onDelete: Cascade, onUpdate: NoAction)
+  users_job_unit_numbers_site_superintendent_idTousers  users?                           @relation("job_unit_numbers_site_superintendent_idTousers", fields: [site_superintendent_id], references: [user_id], onDelete: NoAction, onUpdate: NoAction)
+  users_job_unit_numbers_warranty_rep_idTousers         users?                           @relation("job_unit_numbers_warranty_rep_idTousers", fields: [warranty_rep_id], references: [user_id], onDelete: NoAction, onUpdate: NoAction)
+  users_job_unit_numbers_warranty_service_rep_idTousers users?                           @relation("job_unit_numbers_warranty_service_rep_idTousers", fields: [warranty_service_rep_id], references: [user_id], onDelete: NoAction, onUpdate: NoAction)
+  job_unit_numbers_custom_fields                        job_unit_numbers_custom_fields[]
+
+  @@unique([region_id, job_number, unit_number])
+  @@index([builder_id], map: "idx_job_unit_numbers_builder_id")
+  @@index([job_number, unit_number], map: "idx_job_unit_numbers_job_unit")
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model job_unit_numbers_custom_fields {
+  job_unit_custom_field_id String           @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  builder_id               String           @db.Uuid
+  region_id                String           @db.Uuid
+  job_number               String           @db.VarChar(50)
+  unit_number              String           @db.VarChar(50)
+  field_name               String           @db.VarChar(100)
+  field_value              String?
+  field_type               String?          @db.VarChar(50)
+  created_at               DateTime?        @default(now()) @db.Timestamptz(6)
+  updated_at               DateTime?        @default(now()) @db.Timestamptz(6)
+  job_unit_numbers         job_unit_numbers @relation(fields: [region_id, job_number, unit_number], references: [region_id, job_number, unit_number], onDelete: Cascade, onUpdate: NoAction, map: "job_unit_numbers_custom_field_region_id_job_number_unit_nu_fkey")
+  builders                 builders         @relation(fields: [builder_id], references: [builder_id], onDelete: Cascade, onUpdate: NoAction)
+  regions                  regions          @relation(fields: [region_id], references: [region_id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@unique([region_id, job_number, unit_number, field_name], map: "job_unit_numbers_custom_field_region_id_job_number_unit_num_key")
+  @@index([builder_id], map: "idx_job_unit_numbers_custom_fields_builder_id")
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model jobs {
+  job_id                        String                          @id(map: "job_pkey") @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  region_id                     String                          @db.Uuid
+  builder_id                    String                          @db.Uuid
+  job_number                    String                          @unique(map: "jobs_job_number_unique") @db.VarChar(50)
+  description                   String?                         @db.VarChar(200)
+  community_id                  String?                         @db.Uuid
+  external_system_code          String?                         @db.VarChar(50)
+  material_sales_tax_group      String?                         @db.VarChar(50)
+  labor_sales_tax_group         String?                         @db.VarChar(50)
+  subcontract_sales_tax_group   String?                         @db.VarChar(50)
+  other_sales_tax_group         String?                         @db.VarChar(50)
+  site_superintendent_id        String?                         @db.Uuid
+  project_manager_id            String?                         @db.Uuid
+  estimator_id                  String?                         @db.Uuid
+  warranty_rep_id               String?                         @db.Uuid
+  warranty_service_rep_id       String?                         @db.Uuid
+  schedule_template_id          String?                         @db.Uuid
+  permit_applied_for_date       DateTime?                       @db.Timestamp(6)
+  permit_received_date          DateTime?                       @db.Timestamp(6)
+  permit_released_date          DateTime?                       @db.Timestamp(6)
+  permit_number                 String?                         @db.VarChar(50)
+  scheduled_start_date          DateTime?                       @db.Timestamp(6)
+  construction_start_date       DateTime?                       @db.Timestamp(6)
+  construction_stage            Int                             @default(0)
+  lot_inventory_id              String?                         @db.Uuid
+  accounting_customer_id        String?                         @db.Uuid
+  job_type                      String?                         @db.VarChar(50)
+  last_po_seq                   Int?
+  community_phase_code          String?                         @db.VarChar(50)
+  sage_intacct_entity           String?                         @db.VarChar(50)
+  sage_intacct_location         String?                         @db.VarChar(50)
+  sage_intacct_department       String?                         @db.VarChar(50)
+  geo_location                  Unsupported("geography")?
+  created_by                    String                          @db.Uuid
+  modified_by                   String                          @db.Uuid
+  created_at                    DateTime?                       @default(now()) @db.Timestamp(6)
+  updated_at                    DateTime?                       @default(now()) @db.Timestamp(6)
+  home_inspections              home_inspections[]
+  home_selection_sheet_response home_selection_sheet_response[]
+  job_unit_numbers              job_unit_numbers[]
+  builders                      builders                        @relation(fields: [builder_id], references: [builder_id], onDelete: Cascade, onUpdate: NoAction)
+  communities                   communities?                    @relation(fields: [community_id], references: [community_id], onDelete: NoAction, onUpdate: NoAction)
+  regions                       regions                         @relation(fields: [region_id], references: [region_id], onDelete: Cascade, onUpdate: NoAction)
+  jobs_custom_fields            jobs_custom_fields[]
+  lien_waiver_master            lien_waiver_master[]
+  schedule_tasks                schedule_tasks[]
+  schedules                     schedules[]
+  tickets                       tickets[]
+  warranty_problems             warranty_problems[]
+
+  @@unique([region_id, job_number], map: "job_region_id_job_number_key")
+  @@index([builder_id], map: "idx_job_builder_id")
+  @@index([community_id], map: "idx_job_community_id")
+  @@index([job_number], map: "idx_job_job_number")
+  @@index([region_id], map: "idx_job_region_id")
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model jobs_custom_fields {
+  job_custom_field_id String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  builder_id          String    @db.Uuid
+  region_id           String    @db.Uuid
+  job_number          String    @db.VarChar(50)
+  field_name          String    @db.VarChar(100)
+  field_value         String?
+  field_type          String?   @db.VarChar(50)
+  created_at          DateTime? @default(now()) @db.Timestamptz(6)
+  updated_at          DateTime? @default(now()) @db.Timestamptz(6)
+  builders            builders  @relation(fields: [builder_id], references: [builder_id], onDelete: Cascade, onUpdate: NoAction)
+  regions             regions   @relation(fields: [region_id], references: [region_id], onDelete: NoAction, onUpdate: NoAction)
+  jobs                jobs      @relation(fields: [region_id, job_number], references: [region_id, job_number], onDelete: Cascade, onUpdate: NoAction)
+
+  @@unique([region_id, job_number, field_name])
+  @@index([builder_id], map: "idx_jobs_custom_fields_builder_id")
+}

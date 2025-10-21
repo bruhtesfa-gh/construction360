@@ -1,0 +1,161 @@
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model ticket_attachments {
+  attachment_id String    @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  builder_id    String    @db.Uuid
+  ticket_id     String    @db.Uuid
+  uploaded_by   String    @db.Uuid
+  file_name     String    @db.VarChar(255)
+  file_path     String    @db.VarChar(500)
+  file_size     BigInt?
+  mime_type     String?   @db.VarChar(100)
+  created_at    DateTime? @default(now()) @db.Timestamp(6)
+  builders      builders  @relation(fields: [builder_id], references: [builder_id], onDelete: Cascade, onUpdate: NoAction)
+  tickets       tickets   @relation(fields: [ticket_id], references: [ticket_id], onDelete: Cascade, onUpdate: NoAction)
+  users         users     @relation(fields: [uploaded_by], references: [user_id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@index([builder_id], map: "idx_ticket_attachments_builder_id")
+  @@index([ticket_id], map: "idx_ticket_attachments_ticket_id")
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model ticket_categories {
+  category_id   String    @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  builder_id    String    @db.Uuid
+  category_name String    @db.VarChar(100)
+  description   String?
+  color         String?   @default("#6366f1") @db.VarChar(7)
+  is_active     Boolean?  @default(true)
+  created_at    DateTime? @default(now()) @db.Timestamp(6)
+  updated_at    DateTime? @default(now()) @db.Timestamp(6)
+  builders      builders  @relation(fields: [builder_id], references: [builder_id], onDelete: Cascade, onUpdate: NoAction)
+  tickets       tickets[]
+
+  @@unique([builder_id, category_name])
+  @@index([builder_id], map: "idx_ticket_categories_builder_id")
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model ticket_comments {
+  comment_id   String    @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  builder_id   String    @db.Uuid
+  ticket_id    String    @db.Uuid
+  user_id      String    @db.Uuid
+  comment_text String
+  is_internal  Boolean?  @default(false)
+  created_at   DateTime? @default(now()) @db.Timestamp(6)
+  updated_at   DateTime? @default(now()) @db.Timestamp(6)
+  builders     builders  @relation(fields: [builder_id], references: [builder_id], onDelete: Cascade, onUpdate: NoAction)
+  tickets      tickets   @relation(fields: [ticket_id], references: [ticket_id], onDelete: Cascade, onUpdate: NoAction)
+  users        users     @relation(fields: [user_id], references: [user_id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@index([builder_id], map: "idx_ticket_comments_builder_id")
+  @@index([created_at], map: "idx_ticket_comments_created_at")
+  @@index([ticket_id], map: "idx_ticket_comments_ticket_id")
+  @@index([user_id], map: "idx_ticket_comments_user_id")
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model ticket_history {
+  history_id         String    @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  builder_id         String    @db.Uuid
+  ticket_id          String    @db.Uuid
+  changed_by         String    @db.Uuid
+  change_type        String    @db.VarChar(50)
+  field_name         String?   @db.VarChar(100)
+  old_value          String?
+  new_value          String?
+  change_description String?
+  created_at         DateTime? @default(now()) @db.Timestamp(6)
+  builders           builders  @relation(fields: [builder_id], references: [builder_id], onDelete: Cascade, onUpdate: NoAction)
+  users              users     @relation(fields: [changed_by], references: [user_id], onDelete: NoAction, onUpdate: NoAction)
+  tickets            tickets   @relation(fields: [ticket_id], references: [ticket_id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@index([builder_id], map: "idx_ticket_history_builder_id")
+  @@index([created_at], map: "idx_ticket_history_created_at")
+  @@index([ticket_id], map: "idx_ticket_history_ticket_id")
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model ticket_priorities {
+  priority_id    String    @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  builder_id     String    @db.Uuid
+  priority_name  String    @db.VarChar(50)
+  priority_level Int
+  color          String?   @default("#6b7280") @db.VarChar(7)
+  is_active      Boolean?  @default(true)
+  created_at     DateTime? @default(now()) @db.Timestamp(6)
+  updated_at     DateTime? @default(now()) @db.Timestamp(6)
+  builders       builders  @relation(fields: [builder_id], references: [builder_id], onDelete: Cascade, onUpdate: NoAction)
+  tickets        tickets[]
+
+  @@unique([builder_id, priority_level])
+  @@unique([builder_id, priority_name])
+  @@index([builder_id], map: "idx_ticket_priorities_builder_id")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model ticket_statuses {
+  status_id           String    @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  builder_id          String    @db.Uuid
+  status_name         String    @db.VarChar(50)
+  status_type         String    @db.VarChar(20)
+  color               String?   @default("#6b7280") @db.VarChar(7)
+  is_default_for_type Boolean?  @default(false)
+  is_active           Boolean?  @default(true)
+  created_at          DateTime? @default(now()) @db.Timestamp(6)
+  updated_at          DateTime? @default(now()) @db.Timestamp(6)
+  builders            builders  @relation(fields: [builder_id], references: [builder_id], onDelete: Cascade, onUpdate: NoAction)
+  tickets             tickets[]
+
+  @@unique([builder_id, status_name])
+  @@index([builder_id], map: "idx_ticket_statuses_builder_id")
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model tickets {
+  ticket_id                        String               @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  builder_id                       String               @db.Uuid
+  ticket_number                    String               @db.VarChar(20)
+  title                            String               @db.VarChar(200)
+  description                      String?
+  category_id                      String?              @db.Uuid
+  priority_id                      String?              @db.Uuid
+  status_id                        String               @db.Uuid
+  reported_by                      String               @db.Uuid
+  assigned_to                      String?              @db.Uuid
+  related_job_id                   String?              @db.Uuid
+  related_home_id                  String?              @db.Uuid
+  related_community_id             String?              @db.Uuid
+  reported_date                    DateTime             @default(now()) @db.Timestamp(6)
+  due_date                         DateTime?            @db.Timestamp(6)
+  resolved_date                    DateTime?            @db.Timestamp(6)
+  closed_date                      DateTime?            @db.Timestamp(6)
+  estimated_hours                  Decimal?             @db.Decimal(8, 2)
+  actual_hours                     Decimal?             @db.Decimal(8, 2)
+  resolution_notes                 String?
+  internal_notes                   String?
+  created_at                       DateTime?            @default(now()) @db.Timestamp(6)
+  updated_at                       DateTime?            @default(now()) @db.Timestamp(6)
+  ticket_attachments               ticket_attachments[]
+  ticket_comments                  ticket_comments[]
+  ticket_history                   ticket_history[]
+  users_tickets_assigned_toTousers users?               @relation("tickets_assigned_toTousers", fields: [assigned_to], references: [user_id], onDelete: NoAction, onUpdate: NoAction)
+  builders                         builders             @relation(fields: [builder_id], references: [builder_id], onDelete: Cascade, onUpdate: NoAction)
+  ticket_categories                ticket_categories?   @relation(fields: [category_id], references: [category_id], onDelete: NoAction, onUpdate: NoAction)
+  ticket_priorities                ticket_priorities?   @relation(fields: [priority_id], references: [priority_id], onDelete: NoAction, onUpdate: NoAction)
+  communities                      communities?         @relation(fields: [related_community_id], references: [community_id], onDelete: NoAction, onUpdate: NoAction)
+  homes                            homes?               @relation(fields: [related_home_id], references: [home_id], onDelete: NoAction, onUpdate: NoAction)
+  jobs                             jobs?                @relation(fields: [related_job_id], references: [job_id], onDelete: NoAction, onUpdate: NoAction)
+  users_tickets_reported_byTousers users                @relation("tickets_reported_byTousers", fields: [reported_by], references: [user_id], onDelete: NoAction, onUpdate: NoAction)
+  ticket_statuses                  ticket_statuses      @relation(fields: [status_id], references: [status_id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@unique([builder_id, ticket_number])
+  @@index([assigned_to], map: "idx_tickets_assigned_to")
+  @@index([builder_id], map: "idx_tickets_builder_id")
+  @@index([category_id], map: "idx_tickets_category_id")
+  @@index([priority_id], map: "idx_tickets_priority_id")
+  @@index([reported_by], map: "idx_tickets_reported_by")
+  @@index([reported_date], map: "idx_tickets_reported_date")
+  @@index([status_id], map: "idx_tickets_status_id")
+}

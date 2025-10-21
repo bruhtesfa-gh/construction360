@@ -1,0 +1,47 @@
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model field_label_templates {
+  template_id                                    String    @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  template_name                                  String    @db.VarChar(100)
+  template_description                           String?
+  industry_type                                  String?   @db.VarChar(50)
+  template_data                                  Json
+  is_system_template                             Boolean?  @default(false)
+  created_by                                     String?   @db.Uuid
+  modified_by                                    String?   @db.Uuid
+  created_at                                     DateTime? @default(now()) @db.Timestamptz(6)
+  updated_at                                     DateTime? @default(now()) @db.Timestamptz(6)
+  users_field_label_templates_created_byTousers  users?    @relation("field_label_templates_created_byTousers", fields: [created_by], references: [user_id], onDelete: NoAction, onUpdate: NoAction)
+  users_field_label_templates_modified_byTousers users?    @relation("field_label_templates_modified_byTousers", fields: [modified_by], references: [user_id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@index([industry_type], map: "idx_field_label_templates_industry")
+  @@index([is_system_template], map: "idx_field_label_templates_system")
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model field_labels {
+  field_label_id                        String    @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  builder_id                            String    @db.Uuid
+  table_name                            String    @db.VarChar(100)
+  column_name                           String    @db.VarChar(100)
+  custom_label                          String    @db.VarChar(200)
+  placeholder_text                      String?   @db.VarChar(200)
+  help_text                             String?
+  is_visible                            Boolean?  @default(true)
+  is_required                           Boolean?
+  validation_rules                      Json?
+  display_order                         Int?
+  field_group                           String?   @db.VarChar(100)
+  created_by                            String?   @db.Uuid
+  modified_by                           String?   @db.Uuid
+  created_at                            DateTime? @default(now()) @db.Timestamptz(6)
+  updated_at                            DateTime? @default(now()) @db.Timestamptz(6)
+  builders                              builders  @relation(fields: [builder_id], references: [builder_id], onDelete: Cascade, onUpdate: NoAction)
+  users_field_labels_created_byTousers  users?    @relation("field_labels_created_byTousers", fields: [created_by], references: [user_id], onDelete: NoAction, onUpdate: NoAction)
+  users_field_labels_modified_byTousers users?    @relation("field_labels_modified_byTousers", fields: [modified_by], references: [user_id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@unique([builder_id, table_name, column_name])
+  @@index([builder_id], map: "idx_field_labels_builder_id")
+  @@index([table_name, column_name], map: "idx_field_labels_table_column")
+  @@index([table_name], map: "idx_field_labels_table_name")
+  @@index([is_visible], map: "idx_field_labels_visible")
+}

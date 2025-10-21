@@ -1,0 +1,175 @@
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model estimating_db_child_item_lists {
+  child_item_list_id                                                                                                   String                           @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  builder_id                                                                                                           String                           @db.Uuid
+  region_id                                                                                                            String                           @db.Uuid
+  item_list_name                                                                                                       String?                          @db.VarChar(100)
+  allow_custom_items                                                                                                   Boolean?                         @default(false)
+  not_required                                                                                                         Boolean?                         @default(false)
+  strict_list                                                                                                          Boolean?                         @default(false)
+  inactive                                                                                                             Boolean?                         @default(false)
+  default_child_item_id                                                                                                String?                          @db.Uuid
+  created_date                                                                                                         DateTime?                        @default(now()) @db.Timestamp(6)
+  modified_date                                                                                                        DateTime?                        @default(now()) @db.Timestamp(6)
+  builders                                                                                                             builders                         @relation(fields: [builder_id], references: [builder_id], onDelete: Cascade, onUpdate: NoAction)
+  regions                                                                                                              regions                          @relation(fields: [region_id], references: [region_id], onDelete: Cascade, onUpdate: NoAction)
+  estimating_db_child_list_items_estimating_db_child_list_items_child_item_list_idToestimating_db_child_item_lists     estimating_db_child_list_items[] @relation("estimating_db_child_list_items_child_item_list_idToestimating_db_child_item_lists")
+  estimating_db_child_list_items_estimating_db_child_list_items_sub_child_item_list_idToestimating_db_child_item_lists estimating_db_child_list_items[] @relation("estimating_db_child_list_items_sub_child_item_list_idToestimating_db_child_item_lists")
+
+  @@index([builder_id], map: "idx_estimating_db_child_item_lists_builder_id")
+  @@index([inactive], map: "idx_estimating_db_child_item_lists_inactive")
+  @@index([region_id], map: "idx_estimating_db_child_item_lists_region_id")
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model estimating_db_child_list_items {
+  child_list_item_id                                                                                                   Int                             @id @default(autoincrement())
+  builder_id                                                                                                           String                          @db.Uuid
+  child_item_list_id                                                                                                   String                          @db.Uuid
+  child_item_id                                                                                                        String                          @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  description                                                                                                          String?                         @db.VarChar(200)
+  manufacturer_part_number                                                                                             String?                         @db.VarChar(50)
+  comments                                                                                                             String?
+  inactive                                                                                                             Boolean?                        @default(false)
+  sub_child_item_list_id                                                                                               String?                         @db.Uuid
+  created_date                                                                                                         DateTime?                       @default(now()) @db.Timestamp(6)
+  modified_date                                                                                                        DateTime?                       @default(now()) @db.Timestamp(6)
+  builders                                                                                                             builders                        @relation(fields: [builder_id], references: [builder_id], onDelete: Cascade, onUpdate: NoAction)
+  estimating_db_child_item_lists_estimating_db_child_list_items_child_item_list_idToestimating_db_child_item_lists     estimating_db_child_item_lists  @relation("estimating_db_child_list_items_child_item_list_idToestimating_db_child_item_lists", fields: [child_item_list_id], references: [child_item_list_id], onDelete: Cascade, onUpdate: NoAction)
+  estimating_db_child_item_lists_estimating_db_child_list_items_sub_child_item_list_idToestimating_db_child_item_lists estimating_db_child_item_lists? @relation("estimating_db_child_list_items_sub_child_item_list_idToestimating_db_child_item_lists", fields: [sub_child_item_list_id], references: [child_item_list_id], onUpdate: NoAction)
+
+  @@unique([child_item_list_id, child_item_id], map: "estimating_db_child_list_item_child_item_list_id_child_item_key")
+  @@index([builder_id], map: "idx_estimating_db_child_list_items_builder_id")
+  @@index([child_item_id], map: "idx_estimating_db_child_list_items_child_item_id")
+  @@index([child_item_list_id], map: "idx_estimating_db_child_list_items_child_item_list_id")
+  @@index([inactive], map: "idx_estimating_db_child_list_items_inactive")
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model estimating_db_groups {
+  estimating_db_group_id                        Int       @id @default(autoincrement())
+  builder_id                                    String    @db.Uuid
+  region_id                                     String    @db.Uuid
+  estimating_db_group                           String    @db.VarChar(20)
+  description                                   String?   @db.VarChar(200)
+  is_deleted                                    Boolean?  @default(false)
+  created_date                                  DateTime? @default(now()) @db.Timestamp(6)
+  created_by                                    String?   @db.Uuid
+  modified_date                                 DateTime? @default(now()) @db.Timestamp(6)
+  modified_by                                   String?   @db.Uuid
+  is_parent_group                               Boolean   @default(false)
+  parent_code                                   String?   @db.VarChar(20)
+  parent_description                            String?   @db.VarChar(200)
+  deleted_date                                  DateTime? @db.Timestamp(6)
+  deleted_by                                    String?   @db.Uuid
+  builders                                      builders  @relation(fields: [builder_id], references: [builder_id], onDelete: Cascade, onUpdate: NoAction)
+  users_estimating_db_groups_created_byTousers  users?    @relation("estimating_db_groups_created_byTousers", fields: [created_by], references: [user_id], onUpdate: NoAction)
+  users_estimating_db_groups_deleted_byTousers  users?    @relation("estimating_db_groups_deleted_byTousers", fields: [deleted_by], references: [user_id], onUpdate: NoAction)
+  users_estimating_db_groups_modified_byTousers users?    @relation("estimating_db_groups_modified_byTousers", fields: [modified_by], references: [user_id], onUpdate: NoAction)
+  regions                                       regions   @relation(fields: [region_id], references: [region_id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@unique([region_id, estimating_db_group])
+  @@index([builder_id], map: "idx_estimating_db_groups_builder_id")
+  @@index([is_deleted], map: "idx_estimating_db_groups_is_deleted")
+  @@index([region_id], map: "idx_estimating_db_groups_region_id")
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model estimating_db_items {
+  estimating_db_item_id          String                         @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  builder_id                     String                         @db.Uuid
+  region_id                      String                         @db.Uuid
+  estimating_db_group            String                         @db.VarChar(100)
+  estimating_db_item_code        String                         @db.VarChar(100)
+  item_description               String?                        @db.VarChar(100)
+  unit_of_measure                String?                        @db.VarChar(50)
+  conversion_factor              Decimal?                       @default(1) @db.Decimal(19, 4)
+  child_item_list_id             String?                        @db.Uuid
+  inverse_item_id                String?                        @db.Uuid
+  created_by                     String?                        @db.Uuid
+  created_date                   DateTime?                      @default(now()) @db.Timestamp(6)
+  modified_by                    String?                        @db.Uuid
+  modified_date                  DateTime?                      @default(now()) @db.Timestamp(6)
+  item_id                        String?                        @db.Uuid
+  price_link                     Int?
+  internal_notes                 String?
+  po_index                       String?                        @db.VarChar(40)
+  jc_cost_code                   String?                        @db.VarChar(40)
+  jc_cost_type                   String?                        @db.VarChar(40)
+  order_uom                      String?                        @db.VarChar(20)
+  takeoff_uom                    String?                        @db.VarChar(20)
+  cost_amount                    Decimal?                       @db.Decimal(9, 2)
+  tax_group                      String?                        @db.VarChar(50)
+  waste_percent                  Decimal?                       @db.Decimal(9, 2)
+  round_dir                      Int?
+  round_to                       Decimal?                       @db.Decimal(10, 4)
+  estimating_db_group_sort_order Decimal?                       @db.Decimal(9, 2)
+  estimating_db_item_sort_order  Decimal?                       @db.Decimal(9, 2)
+  manufacturer_part_number       String?                        @db.VarChar(50)
+  cost_type                      String?                        @db.VarChar(1)
+  estimating_db_item_number      String?                        @db.VarChar(20)
+  lump_sum_bid                   Boolean?                       @default(false)
+  use_in_scheduling_vpo          Boolean?                       @default(false)
+  alt_jc_cost_code               String?                        @db.VarChar(40)
+  alt_jc_cost_type               String?                        @db.VarChar(40)
+  location                       String?                        @db.VarChar(500)
+  option_code                    String?                        @db.VarChar(50)
+  color                          String?                        @db.VarChar(500)
+  option_sub_category            String?                        @db.VarChar(50)
+  retail_pretax                  Decimal?                       @db.Decimal(14, 2)
+  inverse_estimating_db_group    String?                        @db.VarChar(20)
+  inverse_estimating_db_item     String?                        @db.VarChar(20)
+  is_deleted                     Boolean?                       @default(false)
+  comments                       String?
+  child_item_list_id_alt         String?                        @db.Uuid
+  inactive                       Boolean?                       @default(false)
+  schedule_master_task_id        String?                        @db.Uuid
+  deleted_date                   DateTime?                      @db.Timestamp(6)
+  deleted_by                     String?                        @db.Uuid
+  option_category_code           String?                        @db.VarChar(50)
+  inverse_item_id_alt            String?                        @db.Uuid
+  assembly_intersect_items       assembly_intersect_items[]
+  builders                       builders                       @relation(fields: [builder_id], references: [builder_id], onDelete: Cascade, onUpdate: NoAction)
+  regions                        regions                        @relation(fields: [region_id], references: [region_id], onDelete: NoAction, onUpdate: NoAction)
+  estimating_db_items_po_index   estimating_db_items_po_index[]
+  po_items                       po_items[]
+  po_items_co                    po_items_co[]
+
+  @@unique([builder_id, region_id, estimating_db_group, estimating_db_item_code], map: "uk_estimating_db_items")
+  @@index([builder_id], map: "idx_estimating_db_items_builder_id")
+  @@index([estimating_db_item_code], map: "idx_estimating_db_items_code")
+  @@index([cost_type], map: "idx_estimating_db_items_cost_type")
+  @@index([estimating_db_group], map: "idx_estimating_db_items_group")
+  @@index([inactive], map: "idx_estimating_db_items_inactive")
+  @@index([is_deleted], map: "idx_estimating_db_items_is_deleted")
+  @@index([item_id], map: "idx_estimating_db_items_item_id")
+  @@index([jc_cost_code], map: "idx_estimating_db_items_jc_cost_code")
+  @@index([jc_cost_type], map: "idx_estimating_db_items_jc_cost_type")
+  @@index([option_category_code], map: "idx_estimating_db_items_option_category_code")
+  @@index([option_code], map: "idx_estimating_db_items_option_code")
+  @@index([po_index], map: "idx_estimating_db_items_po_index")
+  @@index([region_id], map: "idx_estimating_db_items_region_id")
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model estimating_db_items_po_index {
+  items_po_index_id     Int                 @id @default(autoincrement())
+  builder_id            String              @db.Uuid
+  region_id             String              @db.Uuid
+  po_index              String              @db.VarChar(40)
+  default_percent       Decimal?            @db.Decimal(7, 4)
+  estimating_db_item_id String              @db.Uuid
+  created_date          DateTime?           @default(now()) @db.Timestamp(6)
+  modified_date         DateTime?           @default(now()) @db.Timestamp(6)
+  builders              builders            @relation(fields: [builder_id], references: [builder_id], onDelete: Cascade, onUpdate: NoAction)
+  estimating_db_items   estimating_db_items @relation(fields: [estimating_db_item_id], references: [estimating_db_item_id], onDelete: Cascade, onUpdate: NoAction)
+  regions               regions             @relation(fields: [region_id], references: [region_id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@unique([region_id, estimating_db_item_id, po_index])
+  @@unique([region_id, estimating_db_item_id], map: "idx_estimating_db_items_po_index_unique")
+  @@index([builder_id], map: "idx_estimating_db_items_po_index_builder_id")
+  @@index([estimating_db_item_id], map: "idx_estimating_db_items_po_index_estimating_db_item_id")
+  @@index([po_index], map: "idx_estimating_db_items_po_index_po_index")
+  @@index([region_id], map: "idx_estimating_db_items_po_index_region_id")
+}

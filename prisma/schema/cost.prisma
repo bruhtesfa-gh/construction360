@@ -1,0 +1,22 @@
+model cost_code_type {
+  cost_code_type      Int       @id
+  cost_code_type_name String    @db.VarChar(50)
+  created_date        DateTime? @default(now()) @db.Timestamp(6)
+  modified_date       DateTime? @default(now()) @db.Timestamp(6)
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model cost_codes {
+  cost_code_id     String   @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  builder_id       String   @db.Uuid
+  accounting_db_id String?  @db.Uuid
+  cost_code        String   @db.VarChar(20)
+  description      String?  @db.VarChar(50)
+  cost_type        String?  @db.VarChar(20)
+  builders         builders @relation(fields: [builder_id], references: [builder_id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@unique([builder_id, accounting_db_id, cost_code], map: "uk_standard_jc_cost_codes")
+  @@index([builder_id], map: "idx_cost_codes_builder_id")
+  @@index([accounting_db_id], map: "idx_standard_jc_cost_codes_accounting_db_id")
+  @@index([cost_code], map: "idx_standard_jc_cost_codes_jc_cost_code")
+}
